@@ -30,8 +30,19 @@ export type PreparationSheet = {
   phases: PreparationPhase[]
 }
 
-export type PreparationResult = {
+export type SavedSheet = {
+  id: string
+  createdAt: string
   sheet: PreparationSheet
+}
+
+export type SheetSummary = {
+  id: string
+  title: string
+  subject: string
+  level: string
+  durationMinutes: number
+  createdAt: string
 }
 
 export type ExtractedDocument = {
@@ -53,4 +64,14 @@ export type ImproveSheetPayload = {
   existingSheet: ExtractedDocument
   resources: ExtractedDocument[]
   notes?: string
+}
+
+export type AuthUser = {
+  id: string
+  email: string
+}
+
+export type AuthResponse = {
+  token: string
+  user: AuthUser
 }
