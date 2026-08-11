@@ -1,0 +1,25 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    image: prep-ai-backend
+    environment:
+      PORT: "8080"
+      GEMINI_API_KEY: ${GEMINI_API_KEY:?Définissez GEMINI_API_KEY dans un fichier .env}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.6-flash}
+      # In compose the frontend calls the API through nginx (same origin),
+      # so CORS is only needed if you hit the backend directly.
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080}
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    image: prep-ai-frontend
+    depends_on:
+      - backend
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    restart: unless-stopped

@@ -1,0 +1,18 @@
+# Environment
+.env
+*.local
+
+# Node / frontend
+node_modules/
+frontend/dist/
+frontend/node_modules/
+*.log
+
+# Go / backend
+backend/bin/
+backend/api
+
+# Editor / OS
+.DS_Store
+.vscode/
+.idea/
