@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/axelfrache/prep-ai/backend/internal/core/domain"
 	"github.com/axelfrache/prep-ai/backend/internal/core/port"
@@ -9,24 +10,48 @@ import (
 
 type Preparation struct {
 	generator port.SheetGenerator
+	sheets    port.SheetRepository
 }
 
-func New(generator port.SheetGenerator) *Preparation {
-	return &Preparation{generator: generator}
+func New(generator port.SheetGenerator, sheets port.SheetRepository) *Preparation {
+	return &Preparation{generator: generator, sheets: sheets}
 }
 
-func (p *Preparation) CreateSheet(ctx context.Context, req domain.CreateRequest) (domain.Sheet, error) {
+func (p *Preparation) CreateSheet(ctx context.Context, userID string, req domain.CreateRequest) (domain.SavedSheet, error) {
 	clean, err := req.Validate()
 	if err != nil {
-		return domain.Sheet{}, err
+		return domain.SavedSheet{}, err
 	}
-	return p.generator.Generate(ctx, buildCreatePrompt(clean))
+	sheet, err := p.generator.Generate(ctx, buildCreatePrompt(clean))
+	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+	return p.sheets.Save(ctx, userID, sheet)
 }
 
-func (p *Preparation) ImproveSheet(ctx context.Context, req domain.ImproveRequest) (domain.Sheet, error) {
+func (p *Preparation) ImproveSheet(ctx context.Context, userID string, req domain.ImproveRequest) (domain.SavedSheet, error) {
 	clean, err := req.Validate()
 	if err != nil {
-		return domain.Sheet{}, err
+		return domain.SavedSheet{}, err
 	}
-	return p.generator.Generate(ctx, buildImprovePrompt(clean))
+	sheet, err := p.generator.Generate(ctx, buildImprovePrompt(clean))
+	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+	return p.sheets.Save(ctx, userID, sheet)
+}
+
+func (p *Preparation) ListSheets(ctx context.Context, userID string) ([]domain.SavedSheet, error) {
+	return p.sheets.ListByUser(ctx, userID)
+}
+
+func (p *Preparation) GetSheet(ctx context.Context, userID, sheetID string) (domain.SavedSheet, error) {
+	sheet, err := p.sheets.GetByID(ctx, userID, sheetID)
+	if err != nil {
+		if errors.Is(err, port.ErrNotFound) {
+			return domain.SavedSheet{}, domain.ErrSheetNotFound()
+		}
+		return domain.SavedSheet{}, err
+	}
+	return sheet, nil
 }
