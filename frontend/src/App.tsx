@@ -1,34 +1,58 @@
 import { useState } from 'react'
-import { GraduationCap, AlertCircle } from 'lucide-react'
+import { AlertCircle, GraduationCap, LogOut } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { AuthPage } from '@/features/AuthPage'
 import { CreateSheetForm } from '@/features/CreateSheetForm'
 import { ImproveSheetForm } from '@/features/ImproveSheetForm'
 import { ResultView } from '@/features/ResultView'
-import type { PreparationResult } from '@/types/preparation'
+import { SheetHistory } from '@/features/SheetHistory'
+import { useAuth } from '@/lib/auth'
+import type { PreparationSheet, SavedSheet } from '@/types/preparation'
 
 function App() {
-  const [result, setResult] = useState<PreparationResult | null>(null)
-  const [error, setError] = useState('')
+  const { user, logout } = useAuth()
 
-  function handleResult(next: PreparationResult) {
-    setResult(next)
+  if (!user) {
+    return <AuthPage />
+  }
+
+  return <Workspace email={user.email} onLogout={logout} />
+}
+
+function Workspace({ email, onLogout }: { email: string; onLogout: () => void }) {
+  const [sheet, setSheet] = useState<PreparationSheet | null>(null)
+  const [error, setError] = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
+
+  function showSheet(next: PreparationSheet) {
+    setSheet(next)
     setError('')
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
   }
 
+  function handleGenerated(saved: SavedSheet) {
+    setRefreshKey((key) => key + 1)
+    showSheet(saved.sheet)
+  }
+
   return (
     <div className="min-h-svh bg-background">
-      <div className="mx-auto flex max-w-5xl flex-col gap-10 px-4 py-10 sm:py-16">
-        <header className="flex flex-col items-center gap-3 text-center">
-          <div className="flex size-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <GraduationCap className="size-6" />
+      <div className="mx-auto flex max-w-5xl flex-col gap-10 px-4 py-10 sm:py-14">
+        <header className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <GraduationCap className="size-5" />
+            </div>
+            <div>
+              <p className="font-semibold leading-tight">Prep AI</p>
+              <p className="text-xs text-muted-foreground">{email}</p>
+            </div>
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight">Prep AI</h1>
-          <p className="max-w-xl text-muted-foreground">
-            Préparez rapidement une fiche de séance directement exploitable en classe, pour le
-            Cycle 2 / CE2.
-          </p>
+          <Button variant="ghost" size="sm" onClick={onLogout}>
+            <LogOut className="size-4" /> Déconnexion
+          </Button>
         </header>
 
         <Card className="mx-auto w-full max-w-2xl">
@@ -53,16 +77,22 @@ function App() {
               ) : null}
 
               <TabsContent value="create" className="mt-6">
-                <CreateSheetForm onResult={handleResult} onError={setError} />
+                <CreateSheetForm onResult={handleGenerated} onError={setError} />
               </TabsContent>
               <TabsContent value="improve" className="mt-6">
-                <ImproveSheetForm onResult={handleResult} onError={setError} />
+                <ImproveSheetForm onResult={handleGenerated} onError={setError} />
               </TabsContent>
             </Tabs>
           </CardContent>
         </Card>
 
-        {result ? <ResultView result={result} /> : null}
+        <SheetHistory
+          refreshKey={refreshKey}
+          onOpen={(saved) => showSheet(saved.sheet)}
+          onError={setError}
+        />
+
+        {sheet ? <ResultView sheet={sheet} /> : null}
 
         <footer className="text-center text-xs text-muted-foreground">
           Évitez d'inclure des données personnelles concernant les élèves.

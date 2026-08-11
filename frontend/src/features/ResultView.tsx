@@ -8,17 +8,16 @@ import type {
   BlockType,
   PreparationBlock,
   PreparationPhase,
-  PreparationResult,
+  PreparationSheet,
 } from '@/types/preparation'
 
 type ResultViewProps = {
-  result: PreparationResult
+  sheet: PreparationSheet
 }
 
 const anticipationTypes: BlockType[] = ['anticipated_error', 'support', 'extension']
 
-export function ResultView({ result }: ResultViewProps) {
-  const { sheet } = result
+export function ResultView({ sheet }: ResultViewProps) {
   const plannedDuration = sheet.phases.reduce((sum, phase) => sum + phase.durationMinutes, 0)
 
   return (
@@ -31,7 +30,7 @@ export function ResultView({ result }: ResultViewProps) {
           <h2 className="text-2xl font-semibold tracking-tight">{sheet.title}</h2>
         </div>
         <div className="flex gap-2 print:hidden">
-          <Button variant="outline" size="sm" onClick={() => void copyResult(result)}>
+          <Button variant="outline" size="sm" onClick={() => void copySheet(sheet)}>
             <Copy className="size-4" /> Copier
           </Button>
           <Button variant="outline" size="sm" onClick={() => window.print()}>
@@ -162,8 +161,7 @@ function blockLabel(type: BlockType): string {
   }
 }
 
-async function copyResult(result: PreparationResult): Promise<void> {
-  const { sheet } = result
+async function copySheet(sheet: PreparationSheet): Promise<void> {
   const phases = sheet.phases
     .map((phase) => {
       const blocks = phase.blocks

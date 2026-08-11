@@ -13,10 +13,10 @@ import {
 } from '@/components/ui/select'
 import { createSheet } from '@/lib/api'
 import { DocumentExtractionError, extractDocuments } from '@/lib/documentExtractors'
-import type { PreparationResult } from '@/types/preparation'
+import type { SavedSheet } from '@/types/preparation'
 
 type CreateSheetFormProps = {
-  onResult: (result: PreparationResult) => void
+  onResult: (saved: SavedSheet) => void
   onError: (message: string) => void
 }
 

@@ -6,10 +6,10 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { improveSheet } from '@/lib/api'
 import { DocumentExtractionError, extractDocuments, extractDocumentText } from '@/lib/documentExtractors'
-import type { PreparationResult } from '@/types/preparation'
+import type { SavedSheet } from '@/types/preparation'
 
 type ImproveSheetFormProps = {
-  onResult: (result: PreparationResult) => void
+  onResult: (saved: SavedSheet) => void
   onError: (message: string) => void
 }
 
