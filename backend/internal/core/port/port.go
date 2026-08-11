@@ -7,10 +7,39 @@ import (
 )
 
 type PreparationService interface {
-	CreateSheet(ctx context.Context, req domain.CreateRequest) (domain.Sheet, error)
-	ImproveSheet(ctx context.Context, req domain.ImproveRequest) (domain.Sheet, error)
+	CreateSheet(ctx context.Context, userID string, req domain.CreateRequest) (domain.SavedSheet, error)
+	ImproveSheet(ctx context.Context, userID string, req domain.ImproveRequest) (domain.SavedSheet, error)
+	ListSheets(ctx context.Context, userID string) ([]domain.SavedSheet, error)
+	GetSheet(ctx context.Context, userID, sheetID string) (domain.SavedSheet, error)
+}
+
+type AuthService interface {
+	Register(ctx context.Context, creds domain.Credentials) (domain.User, string, error)
+	Login(ctx context.Context, creds domain.Credentials) (domain.User, string, error)
+	Authenticate(ctx context.Context, token string) (string, error)
 }
 
 type SheetGenerator interface {
 	Generate(ctx context.Context, prompt string) (domain.Sheet, error)
+}
+
+type UserRepository interface {
+	Create(ctx context.Context, email, passwordHash string) (domain.User, error)
+	FindByEmail(ctx context.Context, email string) (domain.User, error)
+}
+
+type SheetRepository interface {
+	Save(ctx context.Context, userID string, sheet domain.Sheet) (domain.SavedSheet, error)
+	ListByUser(ctx context.Context, userID string) ([]domain.SavedSheet, error)
+	GetByID(ctx context.Context, userID, sheetID string) (domain.SavedSheet, error)
+}
+
+type PasswordHasher interface {
+	Hash(password string) (string, error)
+	Compare(hash, password string) error
+}
+
+type TokenService interface {
+	Issue(userID string) (string, error)
+	Verify(token string) (string, error)
 }

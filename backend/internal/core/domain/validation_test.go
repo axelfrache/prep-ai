@@ -34,7 +34,7 @@ func TestCreateRequestValidate_Errors(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := tc.req.Validate()
-			var ve *ValidationError
+			var ve *AppError
 			if !errors.As(err, &ve) || ve.Kind != tc.kind {
 				t.Fatalf("attendu ValidationError kind=%v, obtenu %v", tc.kind, err)
 			}
@@ -46,7 +46,7 @@ func TestValidateDocument_UnsupportedType(t *testing.T) {
 	req := validCreate()
 	req.Resources = []Document{{Name: "x.pptx", Type: "pptx", Text: "assez de texte ici"}}
 	_, err := req.Validate()
-	var ve *ValidationError
+	var ve *AppError
 	if !errors.As(err, &ve) || ve.Kind != KindUnsupportedMedia {
 		t.Fatalf("attendu KindUnsupportedMedia, obtenu %v", err)
 	}
@@ -56,7 +56,7 @@ func TestValidateTotalText_TooLarge(t *testing.T) {
 	req := validCreate()
 	req.Resources = []Document{{Name: "big.txt", Type: "txt", Text: strings.Repeat("a", MaxTextChars+1)}}
 	_, err := req.Validate()
-	var ve *ValidationError
+	var ve *AppError
 	if !errors.As(err, &ve) || ve.Kind != KindTooLarge {
 		t.Fatalf("attendu KindTooLarge, obtenu %v", err)
 	}

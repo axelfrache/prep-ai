@@ -8,25 +8,40 @@ const (
 	KindInvalid ErrorKind = iota
 	KindTooLarge
 	KindUnsupportedMedia
+	KindUnauthorized
+	KindConflict
+	KindNotFound
 )
 
-type ValidationError struct {
+type AppError struct {
 	Kind    ErrorKind
 	Message string
 }
 
-func (e *ValidationError) Error() string { return e.Message }
+func (e *AppError) Error() string { return e.Message }
 
-func invalid(format string, args ...any) *ValidationError {
-	return &ValidationError{Kind: KindInvalid, Message: fmt.Sprintf(format, args...)}
+func invalid(format string, args ...any) *AppError {
+	return &AppError{Kind: KindInvalid, Message: fmt.Sprintf(format, args...)}
 }
 
-func tooLarge(format string, args ...any) *ValidationError {
-	return &ValidationError{Kind: KindTooLarge, Message: fmt.Sprintf(format, args...)}
+func tooLarge(format string, args ...any) *AppError {
+	return &AppError{Kind: KindTooLarge, Message: fmt.Sprintf(format, args...)}
 }
 
-func unsupported(format string, args ...any) *ValidationError {
-	return &ValidationError{Kind: KindUnsupportedMedia, Message: fmt.Sprintf(format, args...)}
+func unsupported(format string, args ...any) *AppError {
+	return &AppError{Kind: KindUnsupportedMedia, Message: fmt.Sprintf(format, args...)}
+}
+
+func unauthorized(format string, args ...any) *AppError {
+	return &AppError{Kind: KindUnauthorized, Message: fmt.Sprintf(format, args...)}
+}
+
+func conflict(format string, args ...any) *AppError {
+	return &AppError{Kind: KindConflict, Message: fmt.Sprintf(format, args...)}
+}
+
+func notFound(format string, args ...any) *AppError {
+	return &AppError{Kind: KindNotFound, Message: fmt.Sprintf(format, args...)}
 }
 
 type GenerationError struct {
