@@ -1,14 +1,33 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-prepai}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-prepai}
+      POSTGRES_DB: ${POSTGRES_DB:-prepai}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-prepai} -d ${POSTGRES_DB:-prepai}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
   backend:
     build:
       context: ./backend
     image: prep-ai-backend
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       PORT: "8080"
       GEMINI_API_KEY: ${GEMINI_API_KEY:?Définissez GEMINI_API_KEY dans un fichier .env}
       GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.6-flash}
-      # In compose the frontend calls the API through nginx (same origin),
-      # so CORS is only needed if you hit the backend directly.
+      DATABASE_URL: postgres://${POSTGRES_USER:-prepai}:${POSTGRES_PASSWORD:-prepai}@db:5432/${POSTGRES_DB:-prepai}?sslmode=disable
+      JWT_SECRET: ${JWT_SECRET:?Définissez JWT_SECRET dans un fichier .env}
+      JWT_TTL: ${JWT_TTL:-24h}
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080}
     expose:
       - "8080"
@@ -23,3 +42,6 @@ services:
     ports:
       - "${WEB_PORT:-8080}:80"
     restart: unless-stopped
+
+volumes:
+  db-data:
