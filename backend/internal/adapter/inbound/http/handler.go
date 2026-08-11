@@ -27,12 +27,12 @@ func (h *Handler) Create(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 		return
 	}
 
-	sheet, err := h.service.CreateSheet(r.Context(), dto.toDomain())
+	saved, err := h.service.CreateSheet(r.Context(), userIDFromContext(r.Context()), dto.toDomain())
 	if err != nil {
 		writeError(w, err)
 		return
 	}
-	writeJSON(w, stdhttp.StatusOK, newResultDTO(sheet))
+	writeJSON(w, stdhttp.StatusOK, newSavedSheetDTO(saved))
 }
 
 func (h *Handler) Improve(w stdhttp.ResponseWriter, r *stdhttp.Request) {
@@ -42,12 +42,30 @@ func (h *Handler) Improve(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 		return
 	}
 
-	sheet, err := h.service.ImproveSheet(r.Context(), dto.toDomain())
+	saved, err := h.service.ImproveSheet(r.Context(), userIDFromContext(r.Context()), dto.toDomain())
 	if err != nil {
 		writeError(w, err)
 		return
 	}
-	writeJSON(w, stdhttp.StatusOK, newResultDTO(sheet))
+	writeJSON(w, stdhttp.StatusOK, newSavedSheetDTO(saved))
+}
+
+func (h *Handler) ListSheets(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	saved, err := h.service.ListSheets(r.Context(), userIDFromContext(r.Context()))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, stdhttp.StatusOK, newSheetSummaryList(saved))
+}
+
+func (h *Handler) GetSheet(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	saved, err := h.service.GetSheet(r.Context(), userIDFromContext(r.Context()), r.PathValue("id"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, stdhttp.StatusOK, newSavedSheetDTO(saved))
 }
 
 func (h *Handler) Health(w stdhttp.ResponseWriter, _ *stdhttp.Request) {
@@ -56,7 +74,7 @@ func (h *Handler) Health(w stdhttp.ResponseWriter, _ *stdhttp.Request) {
 
 func decodeJSON(w stdhttp.ResponseWriter, r *stdhttp.Request, dst any) error {
 	if ct := r.Header.Get("Content-Type"); ct != "" && !hasJSONContentType(ct) {
-		return &domain.ValidationError{
+		return &domain.AppError{
 			Kind:    domain.KindUnsupportedMedia,
 			Message: "La demande doit être envoyée au format JSON.",
 		}
@@ -67,15 +85,15 @@ func decodeJSON(w stdhttp.ResponseWriter, r *stdhttp.Request, dst any) error {
 	if err := decoder.Decode(dst); err != nil {
 		var maxErr *stdhttp.MaxBytesError
 		if errors.As(err, &maxErr) {
-			return &domain.ValidationError{
+			return &domain.AppError{
 				Kind:    domain.KindTooLarge,
 				Message: "La demande est trop volumineuse. Réduisez les ressources envoyées.",
 			}
 		}
 		if errors.Is(err, io.EOF) {
-			return &domain.ValidationError{Kind: domain.KindInvalid, Message: "Le corps de la requête est vide."}
+			return &domain.AppError{Kind: domain.KindInvalid, Message: "Le corps de la requête est vide."}
 		}
-		return &domain.ValidationError{Kind: domain.KindInvalid, Message: "Le JSON envoyé est invalide."}
+		return &domain.AppError{Kind: domain.KindInvalid, Message: "Le JSON envoyé est invalide."}
 	}
 	return nil
 }

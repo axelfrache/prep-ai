@@ -1,6 +1,10 @@
 package http
 
-import "github.com/axelfrache/prep-ai/backend/internal/core/domain"
+import (
+	"time"
+
+	"github.com/axelfrache/prep-ai/backend/internal/core/domain"
+)
 
 type documentDTO struct {
 	Name string `json:"name"`
@@ -54,10 +58,6 @@ func (r improveRequestDTO) toDomain() domain.ImproveRequest {
 	}
 }
 
-type resultDTO struct {
-	Sheet sheetDTO `json:"sheet"`
-}
-
 type sheetDTO struct {
 	Title           string     `json:"title"`
 	Subject         string     `json:"subject"`
@@ -81,7 +81,7 @@ type blockDTO struct {
 	Text string `json:"text"`
 }
 
-func newResultDTO(sheet domain.Sheet) resultDTO {
+func newSheetDTO(sheet domain.Sheet) sheetDTO {
 	phases := make([]phaseDTO, len(sheet.Phases))
 	for i, p := range sheet.Phases {
 		blocks := make([]blockDTO, len(p.Blocks))
@@ -95,7 +95,7 @@ func newResultDTO(sheet domain.Sheet) resultDTO {
 			Blocks:          blocks,
 		}
 	}
-	return resultDTO{Sheet: sheetDTO{
+	return sheetDTO{
 		Title:           sheet.Title,
 		Subject:         sheet.Subject,
 		Level:           sheet.Level,
@@ -104,5 +104,69 @@ func newResultDTO(sheet domain.Sheet) resultDTO {
 		Objective:       sheet.Objective,
 		Materials:       sheet.Materials,
 		Phases:          phases,
-	}}
+	}
+}
+
+type savedSheetDTO struct {
+	ID        string    `json:"id"`
+	CreatedAt time.Time `json:"createdAt"`
+	Sheet     sheetDTO  `json:"sheet"`
+}
+
+func newSavedSheetDTO(saved domain.SavedSheet) savedSheetDTO {
+	return savedSheetDTO{
+		ID:        saved.ID,
+		CreatedAt: saved.CreatedAt,
+		Sheet:     newSheetDTO(saved.Sheet),
+	}
+}
+
+type sheetSummaryDTO struct {
+	ID              string    `json:"id"`
+	Title           string    `json:"title"`
+	Subject         string    `json:"subject"`
+	Level           string    `json:"level"`
+	DurationMinutes int       `json:"durationMinutes"`
+	CreatedAt       time.Time `json:"createdAt"`
+}
+
+func newSheetSummaryList(saved []domain.SavedSheet) []sheetSummaryDTO {
+	out := make([]sheetSummaryDTO, len(saved))
+	for i, s := range saved {
+		out[i] = sheetSummaryDTO{
+			ID:              s.ID,
+			Title:           s.Sheet.Title,
+			Subject:         s.Sheet.Subject,
+			Level:           s.Sheet.Level,
+			DurationMinutes: s.Sheet.DurationMinutes,
+			CreatedAt:       s.CreatedAt,
+		}
+	}
+	return out
+}
+
+type credentialsDTO struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (c credentialsDTO) toDomain() domain.Credentials {
+	return domain.Credentials{Email: c.Email, Password: c.Password}
+}
+
+type userDTO struct {
+	ID    string `json:"id"`
+	Email string `json:"email"`
+}
+
+type authResponseDTO struct {
+	Token string  `json:"token"`
+	User  userDTO `json:"user"`
+}
+
+func newAuthResponse(user domain.User, token string) authResponseDTO {
+	return authResponseDTO{
+		Token: token,
+		User:  userDTO{ID: user.ID, Email: user.Email},
+	}
 }

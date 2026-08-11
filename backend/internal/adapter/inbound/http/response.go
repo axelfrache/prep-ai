@@ -19,9 +19,9 @@ func writeJSON(w stdhttp.ResponseWriter, status int, v any) {
 }
 
 func writeError(w stdhttp.ResponseWriter, err error) {
-	var validation *domain.ValidationError
-	if errors.As(err, &validation) {
-		writeJSON(w, statusForKind(validation.Kind), errorBody{Error: validation.Message})
+	var app *domain.AppError
+	if errors.As(err, &app) {
+		writeJSON(w, statusForKind(app.Kind), errorBody{Error: app.Message})
 		return
 	}
 
@@ -32,7 +32,7 @@ func writeError(w stdhttp.ResponseWriter, err error) {
 	}
 
 	writeJSON(w, stdhttp.StatusInternalServerError, errorBody{
-		Error: "Une erreur inattendue est survenue pendant la génération.",
+		Error: "Une erreur inattendue est survenue.",
 	})
 }
 
@@ -42,6 +42,12 @@ func statusForKind(kind domain.ErrorKind) int {
 		return stdhttp.StatusRequestEntityTooLarge
 	case domain.KindUnsupportedMedia:
 		return stdhttp.StatusUnsupportedMediaType
+	case domain.KindUnauthorized:
+		return stdhttp.StatusUnauthorized
+	case domain.KindConflict:
+		return stdhttp.StatusConflict
+	case domain.KindNotFound:
+		return stdhttp.StatusNotFound
 	default:
 		return stdhttp.StatusBadRequest
 	}

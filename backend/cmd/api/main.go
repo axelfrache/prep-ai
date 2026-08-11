@@ -12,6 +12,8 @@ import (
 
 	httpadapter "github.com/axelfrache/prep-ai/backend/internal/adapter/inbound/http"
 	"github.com/axelfrache/prep-ai/backend/internal/adapter/outbound/gemini"
+	"github.com/axelfrache/prep-ai/backend/internal/adapter/outbound/postgres"
+	"github.com/axelfrache/prep-ai/backend/internal/adapter/outbound/security"
 	"github.com/axelfrache/prep-ai/backend/internal/config"
 	"github.com/axelfrache/prep-ai/backend/internal/core/service"
 )
@@ -23,9 +25,27 @@ func main() {
 		log.Println("attention : GEMINI_API_KEY n'est pas défini, la génération échouera.")
 	}
 
+	ctx := context.Background()
+	pool, err := postgres.Connect(ctx, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("connexion à la base impossible : %v", err)
+	}
+	defer pool.Close()
+
+	if err := postgres.Migrate(ctx, pool); err != nil {
+		log.Fatalf("migration de la base impossible : %v", err)
+	}
+
+	users := postgres.NewUserRepository(pool)
+	sheets := postgres.NewSheetRepository(pool)
 	generator := gemini.New(cfg.GeminiAPIKey, cfg.GeminiModel)
-	preparation := service.New(generator)
-	router := httpadapter.NewRouter(preparation, cfg.AllowedOrigins)
+	hasher := security.NewBcryptHasher()
+	tokens := security.NewJWTService(cfg.JWTSecret, cfg.JWTTTL)
+
+	preparation := service.New(generator, sheets)
+	auth := service.NewAuth(users, hasher, tokens)
+
+	router := httpadapter.NewRouter(preparation, auth, cfg.AllowedOrigins)
 	server := httpadapter.NewServer(cfg.Addr(), router)
 
 	go func() {
@@ -40,9 +60,9 @@ func main() {
 	<-stop
 
 	log.Println("arrêt en cours...")
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := server.Shutdown(ctx); err != nil {
+	if err := server.Shutdown(shutdownCtx); err != nil {
 		log.Printf("arrêt non propre : %v", err)
 	}
 }
