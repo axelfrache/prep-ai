@@ -130,7 +130,9 @@ function PhaseSection({ title, children }: { title: string; children: React.Reac
 
 function renderBlocks(blocks: PreparationBlock[], anticipations: boolean) {
   const filtered = blocks.filter((block) =>
-    anticipations ? anticipationTypes.includes(block.type) : !anticipationTypes.includes(block.type),
+    anticipations
+      ? anticipationTypes.includes(block.type)
+      : !anticipationTypes.includes(block.type),
   )
   if (filtered.length === 0) {
     return null

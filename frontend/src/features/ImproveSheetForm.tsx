@@ -6,7 +6,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { improveSheet } from '@/lib/api'
-import { DocumentExtractionError, extractDocuments, extractDocumentText } from '@/lib/documentExtractors'
+import {
+  DocumentExtractionError,
+  extractDocuments,
+  extractDocumentText,
+} from '@/lib/documentExtractors'
 import type { SavedSheet } from '@/types/preparation'
 
 type ImproveSheetFormProps = {

@@ -22,7 +22,12 @@ type SheetPreviewDialogProps = {
   onOpenChange?: (open: boolean) => void
 }
 
-export function SheetPreviewDialog({ sheet, trigger, open, onOpenChange }: SheetPreviewDialogProps) {
+export function SheetPreviewDialog({
+  sheet,
+  trigger,
+  open,
+  onOpenChange,
+}: SheetPreviewDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false)
   const isControlled = open !== undefined
   const isOpen = isControlled ? open : internalOpen

@@ -70,17 +70,26 @@ function worksheetXml(sheet: PreparationSheet): string {
 function sheetToRows(sheet: PreparationSheet): StyledCell[][] {
   return [
     [{ value: sheet.title, style: styles.title }],
-    [{ value: 'Matière', style: styles.label }, { value: sheet.subject, style: styles.wrap }],
+    [
+      { value: 'Matière', style: styles.label },
+      { value: sheet.subject, style: styles.wrap },
+    ],
     [
       { value: 'Niveau / durée', style: styles.label },
       { value: `${sheet.level} - ${sheet.durationMinutes} min`, style: styles.wrap },
     ],
-    [{ value: 'Objectif', style: styles.label }, { value: sheet.objective, style: styles.wrap }],
+    [
+      { value: 'Objectif', style: styles.label },
+      { value: sheet.objective, style: styles.wrap },
+    ],
     [
       { value: 'Compétences', style: styles.label },
       { value: listText(sheet.competencies), style: styles.wrap },
     ],
-    [{ value: 'Matériel', style: styles.label }, { value: listText(sheet.materials), style: styles.wrap }],
+    [
+      { value: 'Matériel', style: styles.label },
+      { value: listText(sheet.materials), style: styles.wrap },
+    ],
     [
       { value: 'Phase', style: styles.header },
       { value: 'Durée', style: styles.header },

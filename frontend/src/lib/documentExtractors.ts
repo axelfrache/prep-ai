@@ -47,7 +47,9 @@ export async function extractDocumentText(file: File): Promise<ExtractedDocument
         `${file.name} semble être un PDF scanné ou sans texte exploitable.`,
       )
     }
-    throw new DocumentExtractionError(`Aucun texte exploitable n'a pu être extrait de ${file.name}.`)
+    throw new DocumentExtractionError(
+      `Aucun texte exploitable n'a pu être extrait de ${file.name}.`,
+    )
   }
 
   return { name: file.name, type: extension, text: normalized }

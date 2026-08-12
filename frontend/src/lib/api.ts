@@ -43,7 +43,10 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   try {
     response = await fetch(`${API_BASE}${path}`, { ...init, headers })
   } catch {
-    throw new ApiError('Impossible de joindre le service. Vérifiez votre connexion puis réessayez.', 0)
+    throw new ApiError(
+      'Impossible de joindre le service. Vérifiez votre connexion puis réessayez.',
+      0,
+    )
   }
 
   if (response.status === 401 && token) {

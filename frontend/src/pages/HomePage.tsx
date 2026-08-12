@@ -27,7 +27,9 @@ export function HomePage() {
     <div className="space-y-10">
       <div className="space-y-1">
         <h1 className="text-2xl font-semibold tracking-tight">Tableau de bord</h1>
-        <p className="text-muted-foreground">Reprenez une fiche ou lancez une nouvelle préparation.</p>
+        <p className="text-muted-foreground">
+          Reprenez une fiche ou lancez une nouvelle préparation.
+        </p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
