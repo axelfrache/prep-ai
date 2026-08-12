@@ -17,7 +17,6 @@ type part struct {
 }
 
 type generationConfig struct {
-	Temperature      float64        `json:"temperature"`
 	ResponseMIMEType string         `json:"responseMimeType"`
 	ResponseSchema   map[string]any `json:"responseSchema"`
 }

@@ -15,25 +15,36 @@ import (
 )
 
 const (
-	defaultModel = "gemini-3.6-flash"
-	baseEndpoint = "https://generativelanguage.googleapis.com/v1beta/models"
-	temperature  = 0.35
+	defaultModel  = "gemini-3.5-flash-lite"
+	advancedModel = "gemini-3.6-flash"
+	fallbackModel = "gemini-3.1-flash-lite"
+	baseEndpoint  = "https://generativelanguage.googleapis.com/v1beta/models"
 )
 
 type Client struct {
-	apiKey string
-	model  string
-	http   *http.Client
+	apiKey        string
+	defaultModel  string
+	advancedModel string
+	fallbackModel string
+	http          *http.Client
 }
 
-func New(apiKey, model string) *Client {
-	if model == "" {
-		model = defaultModel
+func New(apiKey, defaultModelName, advancedModelName, fallbackModelName string) *Client {
+	if defaultModelName == "" {
+		defaultModelName = defaultModel
+	}
+	if advancedModelName == "" {
+		advancedModelName = advancedModel
+	}
+	if fallbackModelName == "" {
+		fallbackModelName = fallbackModel
 	}
 	return &Client{
-		apiKey: apiKey,
-		model:  model,
-		http:   &http.Client{Timeout: 90 * time.Second},
+		apiKey:        apiKey,
+		defaultModel:  defaultModelName,
+		advancedModel: advancedModelName,
+		fallbackModel: fallbackModelName,
+		http:          &http.Client{Timeout: 90 * time.Second},
 	}
 }
 
@@ -45,7 +56,7 @@ func blockTypeEnum() []string {
 	return out
 }
 
-func (c *Client) Generate(ctx context.Context, prompt string) (domain.Sheet, error) {
+func (c *Client) Generate(ctx context.Context, prompt string, mode domain.GenerationMode) (domain.Sheet, error) {
 	if c.apiKey == "" {
 		return domain.Sheet{}, domain.NewGenerationError(http.StatusInternalServerError,
 			"La clé Gemini n'est pas configurée sur le serveur.")
@@ -54,7 +65,6 @@ func (c *Client) Generate(ctx context.Context, prompt string) (domain.Sheet, err
 	body, err := json.Marshal(geminiRequest{
 		Contents: []content{{Role: "user", Parts: []part{{Text: prompt}}}},
 		GenerationConfig: generationConfig{
-			Temperature:      temperature,
 			ResponseMIMEType: "application/json",
 			ResponseSchema:   responseSchema,
 		},
@@ -64,10 +74,26 @@ func (c *Client) Generate(ctx context.Context, prompt string) (domain.Sheet, err
 			"Impossible de préparer la requête de génération.")
 	}
 
-	endpoint := fmt.Sprintf("%s/%s:generateContent", baseEndpoint, url.PathEscape(c.model))
+	models := c.modelsFor(mode)
+	for i, model := range models {
+		sheet, status, err := c.generateWithModel(ctx, model, body)
+		if err == nil {
+			return sheet, nil
+		}
+		if status != http.StatusTooManyRequests || i == len(models)-1 {
+			return domain.Sheet{}, err
+		}
+	}
+
+	return domain.Sheet{}, domain.NewGenerationError(http.StatusBadGateway,
+		"Gemini n'a pas pu générer la préparation.")
+}
+
+func (c *Client) generateWithModel(ctx context.Context, model string, body []byte) (domain.Sheet, int, error) {
+	endpoint := fmt.Sprintf("%s/%s:generateContent", baseEndpoint, url.PathEscape(model))
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
 	if err != nil {
-		return domain.Sheet{}, domain.NewGenerationError(http.StatusInternalServerError,
+		return domain.Sheet{}, 0, domain.NewGenerationError(http.StatusInternalServerError,
 			"Impossible de préparer la requête de génération.")
 	}
 	req.Header.Set("Content-Type", "application/json")
@@ -75,20 +101,38 @@ func (c *Client) Generate(ctx context.Context, prompt string) (domain.Sheet, err
 
 	resp, err := c.http.Do(req)
 	if err != nil {
-		return domain.Sheet{}, domain.NewGenerationError(http.StatusBadGateway,
+		return domain.Sheet{}, 0, domain.NewGenerationError(http.StatusBadGateway,
 			"Le service de génération est injoignable pour le moment.")
 	}
 	defer resp.Body.Close()
 
 	raw, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusOK {
-		return domain.Sheet{}, c.httpError(resp.StatusCode, raw)
+		return domain.Sheet{}, resp.StatusCode, c.httpError(model, resp.StatusCode, raw)
 	}
 
-	return decodeSheet(raw)
+	sheet, err := decodeSheet(raw)
+	if err != nil {
+		return domain.Sheet{}, http.StatusOK, err
+	}
+	return sheet, http.StatusOK, nil
 }
 
-func (c *Client) httpError(status int, raw []byte) error {
+func (c *Client) modelFor(mode domain.GenerationMode) string {
+	return c.modelsFor(mode)[0]
+}
+
+func (c *Client) modelsFor(mode domain.GenerationMode) []string {
+	if mode == domain.GenerationModeAdvanced {
+		return []string{c.advancedModel}
+	}
+	if c.fallbackModel == "" || c.fallbackModel == c.defaultModel {
+		return []string{c.defaultModel}
+	}
+	return []string{c.defaultModel, c.fallbackModel}
+}
+
+func (c *Client) httpError(model string, status int, raw []byte) error {
 	switch status {
 	case http.StatusTooManyRequests:
 		return domain.NewGenerationError(http.StatusTooManyRequests,
@@ -96,7 +140,7 @@ func (c *Client) httpError(status int, raw []byte) error {
 	case http.StatusNotFound:
 		return domain.NewGenerationError(http.StatusBadGateway,
 			"Le modèle Gemini configuré (%s) n'est pas disponible pour cette clé. "+
-				"Configurez un modèle plus récent, par exemple gemini-3.6-flash.", c.model)
+				"Vérifiez GEMINI_DEFAULT_MODEL, GEMINI_ADVANCED_MODEL ou GEMINI_FALLBACK_MODEL.", model)
 	}
 
 	details := readAPIError(raw)

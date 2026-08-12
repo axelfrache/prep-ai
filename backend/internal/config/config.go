@@ -7,24 +7,28 @@ import (
 )
 
 type Config struct {
-	Port           string
-	GeminiAPIKey   string
-	GeminiModel    string
-	DatabaseURL    string
-	JWTSecret      string
-	JWTTTL         time.Duration
-	AllowedOrigins []string
+	Port                string
+	GeminiAPIKey        string
+	GeminiDefaultModel  string
+	GeminiAdvancedModel string
+	GeminiFallbackModel string
+	DatabaseURL         string
+	JWTSecret           string
+	JWTTTL              time.Duration
+	AllowedOrigins      []string
 }
 
 func Load() Config {
 	return Config{
-		Port:           getEnv("PORT", "8080"),
-		GeminiAPIKey:   os.Getenv("GEMINI_API_KEY"),
-		GeminiModel:    os.Getenv("GEMINI_MODEL"),
-		DatabaseURL:    getEnv("DATABASE_URL", "postgres://prepai:prepai@localhost:5432/prepai?sslmode=disable"),
-		JWTSecret:      getEnv("JWT_SECRET", "dev-secret-change-me"),
-		JWTTTL:         getDuration("JWT_TTL", 24*time.Hour),
-		AllowedOrigins: splitOrigins(getEnv("ALLOWED_ORIGINS", "http://localhost:5173")),
+		Port:                getEnv("PORT", "8080"),
+		GeminiAPIKey:        os.Getenv("GEMINI_API_KEY"),
+		GeminiDefaultModel:  getEnv("GEMINI_DEFAULT_MODEL", "gemini-3.5-flash-lite"),
+		GeminiAdvancedModel: getEnv("GEMINI_ADVANCED_MODEL", "gemini-3.6-flash"),
+		GeminiFallbackModel: getEnv("GEMINI_FALLBACK_MODEL", "gemini-3.1-flash-lite"),
+		DatabaseURL:         getEnv("DATABASE_URL", "postgres://prepai:prepai@localhost:5432/prepai?sslmode=disable"),
+		JWTSecret:           getEnv("JWT_SECRET", "dev-secret-change-me"),
+		JWTTTL:              getDuration("JWT_TTL", 24*time.Hour),
+		AllowedOrigins:      splitOrigins(getEnv("ALLOWED_ORIGINS", "http://localhost:5173")),
 	}
 }
 

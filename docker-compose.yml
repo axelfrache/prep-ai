@@ -24,7 +24,9 @@ services:
     environment:
       PORT: "8080"
       GEMINI_API_KEY: ${GEMINI_API_KEY:?Définissez GEMINI_API_KEY dans un fichier .env}
-      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.6-flash}
+      GEMINI_DEFAULT_MODEL: ${GEMINI_DEFAULT_MODEL:-gemini-3.5-flash-lite}
+      GEMINI_ADVANCED_MODEL: ${GEMINI_ADVANCED_MODEL:-gemini-3.6-flash}
+      GEMINI_FALLBACK_MODEL: ${GEMINI_FALLBACK_MODEL:-gemini-3.1-flash-lite}
       DATABASE_URL: postgres://${POSTGRES_USER:-prepai}:${POSTGRES_PASSWORD:-prepai}@db:5432/${POSTGRES_DB:-prepai}?sslmode=disable
       JWT_SECRET: ${JWT_SECRET:?Définissez JWT_SECRET dans un fichier .env}
       JWT_TTL: ${JWT_TTL:-24h}

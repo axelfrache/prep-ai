@@ -51,6 +51,8 @@ export type ExtractedDocument = {
   text: string
 }
 
+export type GenerationMode = 'fast' | 'advanced'
+
 export type CreateSheetPayload = {
   subject: string
   level: string
@@ -58,12 +60,14 @@ export type CreateSheetPayload = {
   resources: ExtractedDocument[]
   notes?: string
   period?: string
+  generationMode?: GenerationMode
 }
 
 export type ImproveSheetPayload = {
   existingSheet: ExtractedDocument
   resources: ExtractedDocument[]
   notes?: string
+  generationMode?: GenerationMode
 }
 
 export type AuthUser = {

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
+import { AdvancedModeToggle } from '@/components/AdvancedModeToggle'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -17,6 +18,7 @@ export function ImproveSheetForm({ onResult, onError }: ImproveSheetFormProps) {
   const [sheetFile, setSheetFile] = useState<File | null>(null)
   const [resourceFiles, setResourceFiles] = useState<FileList | null>(null)
   const [notes, setNotes] = useState('')
+  const [advancedMode, setAdvancedMode] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -35,6 +37,7 @@ export function ImproveSheetForm({ onResult, onError }: ImproveSheetFormProps) {
         existingSheet,
         resources,
         notes: notes.trim() || undefined,
+        generationMode: advancedMode ? 'advanced' : 'fast',
       })
       onResult(result)
     } catch (error) {
@@ -81,6 +84,8 @@ export function ImproveSheetForm({ onResult, onError }: ImproveSheetFormProps) {
           placeholder="Ex. clarifier l’objectif, ajouter de la différenciation..."
         />
       </div>
+
+      <AdvancedModeToggle checked={advancedMode} onCheckedChange={setAdvancedMode} />
 
       <Button type="submit" className="w-full" disabled={submitting}>
         {submitting ? <Loader2 className="size-4 animate-spin" /> : null}

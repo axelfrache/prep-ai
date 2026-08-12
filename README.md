@@ -2,6 +2,8 @@
 
 Assistant de préparation pédagogique pour le Cycle 2 / CE2 : **créer** une fiche de séance ou **améliorer** une fiche existante. L'extraction des documents (PDF, DOCX, ODT, TXT) se fait dans le navigateur ; le backend ajoute les prompts métier et appelle Gemini. Chaque utilisateur a un compte et retrouve l'historique de ses fiches.
 
+Par défaut, la génération utilise Gemini 3.5 Flash-Lite (`gemini-3.5-flash-lite`). Si ce modèle répond 429, le backend réessaie avec Gemini 3.1 Flash-Lite (`gemini-3.1-flash-lite`). L'option **Raisonnement avancé** dans l'interface bascule ponctuellement sur Gemini 3.6 Flash (`gemini-3.6-flash`) pour de meilleurs résultats, avec des quotas plus limités.
+
 ## Structure
 
 ```
@@ -49,4 +51,4 @@ Auth par JWT : envoyer `Authorization: Bearer <token>`. Mots de passe hachés av
 
 ## Variables d'environnement
 
-`PORT`, `GEMINI_API_KEY`, `GEMINI_MODEL`, `DATABASE_URL`, `JWT_SECRET`, `JWT_TTL`, `ALLOWED_ORIGINS`.
+`PORT`, `GEMINI_API_KEY`, `GEMINI_DEFAULT_MODEL`, `GEMINI_ADVANCED_MODEL`, `GEMINI_FALLBACK_MODEL`, `DATABASE_URL`, `JWT_SECRET`, `JWT_TTL`, `ALLOWED_ORIGINS`.

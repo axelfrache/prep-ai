@@ -20,7 +20,7 @@ type AuthService interface {
 }
 
 type SheetGenerator interface {
-	Generate(ctx context.Context, prompt string) (domain.Sheet, error)
+	Generate(ctx context.Context, prompt string, mode domain.GenerationMode) (domain.Sheet, error)
 }
 
 type UserRepository interface {

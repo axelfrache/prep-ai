@@ -31,6 +31,7 @@ type createRequestDTO struct {
 	Period          string        `json:"period"`
 	Notes           string        `json:"notes"`
 	Resources       []documentDTO `json:"resources"`
+	GenerationMode  string        `json:"generationMode"`
 }
 
 func (r createRequestDTO) toDomain() domain.CreateRequest {
@@ -41,20 +42,23 @@ func (r createRequestDTO) toDomain() domain.CreateRequest {
 		Period:          r.Period,
 		Notes:           r.Notes,
 		Resources:       toDomainDocuments(r.Resources),
+		GenerationMode:  domain.GenerationMode(r.GenerationMode),
 	}
 }
 
 type improveRequestDTO struct {
-	ExistingSheet documentDTO   `json:"existingSheet"`
-	Notes         string        `json:"notes"`
-	Resources     []documentDTO `json:"resources"`
+	ExistingSheet  documentDTO   `json:"existingSheet"`
+	Notes          string        `json:"notes"`
+	Resources      []documentDTO `json:"resources"`
+	GenerationMode string        `json:"generationMode"`
 }
 
 func (r improveRequestDTO) toDomain() domain.ImproveRequest {
 	return domain.ImproveRequest{
-		ExistingSheet: r.ExistingSheet.toDomain(),
-		Notes:         r.Notes,
-		Resources:     toDomainDocuments(r.Resources),
+		ExistingSheet:  r.ExistingSheet.toDomain(),
+		Notes:          r.Notes,
+		Resources:      toDomainDocuments(r.Resources),
+		GenerationMode: domain.GenerationMode(r.GenerationMode),
 	}
 }
 

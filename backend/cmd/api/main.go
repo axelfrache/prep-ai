@@ -38,7 +38,12 @@ func main() {
 
 	users := postgres.NewUserRepository(pool)
 	sheets := postgres.NewSheetRepository(pool)
-	generator := gemini.New(cfg.GeminiAPIKey, cfg.GeminiModel)
+	generator := gemini.New(
+		cfg.GeminiAPIKey,
+		cfg.GeminiDefaultModel,
+		cfg.GeminiAdvancedModel,
+		cfg.GeminiFallbackModel,
+	)
 	hasher := security.NewBcryptHasher()
 	tokens := security.NewJWTService(cfg.JWTSecret, cfg.JWTTTL)
 

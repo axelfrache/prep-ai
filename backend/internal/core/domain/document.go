@@ -15,6 +15,13 @@ type Document struct {
 	Text string
 }
 
+type GenerationMode string
+
+const (
+	GenerationModeFast     GenerationMode = "fast"
+	GenerationModeAdvanced GenerationMode = "advanced"
+)
+
 type CreateRequest struct {
 	Subject         string
 	Level           string
@@ -22,12 +29,14 @@ type CreateRequest struct {
 	Period          string
 	Notes           string
 	Resources       []Document
+	GenerationMode  GenerationMode
 }
 
 type ImproveRequest struct {
-	ExistingSheet Document
-	Notes         string
-	Resources     []Document
+	ExistingSheet  Document
+	Notes          string
+	Resources      []Document
+	GenerationMode GenerationMode
 }
 
 func normalizeType(t string) string {

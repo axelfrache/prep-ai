@@ -17,6 +17,7 @@ func (r CreateRequest) Validate() (CreateRequest, error) {
 		DurationMinutes: r.DurationMinutes,
 		Period:          strings.TrimSpace(r.Period),
 		Notes:           strings.TrimSpace(r.Notes),
+		GenerationMode:  normalizeGenerationMode(r.GenerationMode),
 	}
 
 	if out.Subject == "" {
@@ -43,7 +44,10 @@ func (r CreateRequest) Validate() (CreateRequest, error) {
 }
 
 func (r ImproveRequest) Validate() (ImproveRequest, error) {
-	out := ImproveRequest{Notes: strings.TrimSpace(r.Notes)}
+	out := ImproveRequest{
+		Notes:          strings.TrimSpace(r.Notes),
+		GenerationMode: normalizeGenerationMode(r.GenerationMode),
+	}
 
 	existing, err := validateDocument(r.ExistingSheet)
 	if err != nil {
@@ -116,4 +120,13 @@ func documentTexts(docs []Document) []string {
 		texts[i] = doc.Text
 	}
 	return texts
+}
+
+func normalizeGenerationMode(mode GenerationMode) GenerationMode {
+	switch GenerationMode(strings.ToLower(strings.TrimSpace(string(mode)))) {
+	case GenerationModeAdvanced:
+		return GenerationModeAdvanced
+	default:
+		return GenerationModeFast
+	}
 }

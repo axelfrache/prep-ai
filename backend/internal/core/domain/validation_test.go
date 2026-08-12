@@ -18,6 +18,21 @@ func TestCreateRequestValidate_OK(t *testing.T) {
 	if clean.Subject != "Addition posée" || clean.DurationMinutes != 45 {
 		t.Fatalf("normalisation inattendue : %+v", clean)
 	}
+	if clean.GenerationMode != GenerationModeFast {
+		t.Fatalf("mode par défaut inattendu : %q", clean.GenerationMode)
+	}
+}
+
+func TestCreateRequestValidate_AdvancedGenerationMode(t *testing.T) {
+	req := validCreate()
+	req.GenerationMode = GenerationModeAdvanced
+	clean, err := req.Validate()
+	if err != nil {
+		t.Fatalf("attendu nil, obtenu %v", err)
+	}
+	if clean.GenerationMode != GenerationModeAdvanced {
+		t.Fatalf("mode avancé inattendu : %q", clean.GenerationMode)
+	}
 }
 
 func TestCreateRequestValidate_Errors(t *testing.T) {

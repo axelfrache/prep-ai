@@ -22,7 +22,7 @@ func (p *Preparation) CreateSheet(ctx context.Context, userID string, req domain
 	if err != nil {
 		return domain.SavedSheet{}, err
 	}
-	sheet, err := p.generator.Generate(ctx, buildCreatePrompt(clean))
+	sheet, err := p.generator.Generate(ctx, buildCreatePrompt(clean), clean.GenerationMode)
 	if err != nil {
 		return domain.SavedSheet{}, err
 	}
@@ -34,7 +34,7 @@ func (p *Preparation) ImproveSheet(ctx context.Context, userID string, req domai
 	if err != nil {
 		return domain.SavedSheet{}, err
 	}
-	sheet, err := p.generator.Generate(ctx, buildImprovePrompt(clean))
+	sheet, err := p.generator.Generate(ctx, buildImprovePrompt(clean), clean.GenerationMode)
 	if err != nil {
 		return domain.SavedSheet{}, err
 	}
