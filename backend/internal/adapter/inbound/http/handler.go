@@ -99,7 +99,7 @@ func decodeJSON(w stdhttp.ResponseWriter, r *stdhttp.Request, dst any) error {
 	if ct := r.Header.Get("Content-Type"); ct != "" && !hasJSONContentType(ct) {
 		return &domain.AppError{
 			Kind:    domain.KindUnsupportedMedia,
-			Message: "La demande doit être envoyée au format JSON.",
+			Message: "The request must be sent as JSON.",
 		}
 	}
 
@@ -110,13 +110,13 @@ func decodeJSON(w stdhttp.ResponseWriter, r *stdhttp.Request, dst any) error {
 		if errors.As(err, &maxErr) {
 			return &domain.AppError{
 				Kind:    domain.KindTooLarge,
-				Message: "La demande est trop volumineuse. Réduisez les ressources envoyées.",
+				Message: "The request is too large. Reduce the submitted resources.",
 			}
 		}
 		if errors.Is(err, io.EOF) {
-			return &domain.AppError{Kind: domain.KindInvalid, Message: "Le corps de la requête est vide."}
+			return &domain.AppError{Kind: domain.KindInvalid, Message: "The request body is empty."}
 		}
-		return &domain.AppError{Kind: domain.KindInvalid, Message: "Le JSON envoyé est invalide."}
+		return &domain.AppError{Kind: domain.KindInvalid, Message: "The submitted JSON is invalid."}
 	}
 	return nil
 }

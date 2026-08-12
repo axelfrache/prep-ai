@@ -1,4 +1,5 @@
 import JSZip from 'jszip'
+import { translateCurrent } from '@/lib/i18n'
 import type { PreparationBlock, PreparationSheet } from '@/types/preparation'
 
 type CellValue = string | number
@@ -27,7 +28,7 @@ export async function exportSheetToXlsx(sheet: PreparationSheet): Promise<void> 
     type: 'blob',
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   })
-  downloadBlob(blob, `${slugify(sheet.title || 'fiche-preparation')}.xlsx`)
+  downloadBlob(blob, `${slugify(sheet.title || 'preparation-sheet')}.xlsx`)
 }
 
 function worksheetXml(sheet: PreparationSheet): string {
@@ -71,33 +72,33 @@ function sheetToRows(sheet: PreparationSheet): StyledCell[][] {
   return [
     [{ value: sheet.title, style: styles.title }],
     [
-      { value: 'Matière', style: styles.label },
+      { value: translateCurrent('create.subject'), style: styles.label },
       { value: sheet.subject, style: styles.wrap },
     ],
     [
-      { value: 'Niveau / durée', style: styles.label },
+      { value: translateCurrent('xlsx.levelDuration'), style: styles.label },
       { value: `${sheet.level} - ${sheet.durationMinutes} min`, style: styles.wrap },
     ],
     [
-      { value: 'Objectif', style: styles.label },
+      { value: translateCurrent('xlsx.objective'), style: styles.label },
       { value: sheet.objective, style: styles.wrap },
     ],
     [
-      { value: 'Compétences', style: styles.label },
+      { value: translateCurrent('sheet.skills'), style: styles.label },
       { value: listText(sheet.competencies), style: styles.wrap },
     ],
     [
-      { value: 'Matériel', style: styles.label },
+      { value: translateCurrent('xlsx.materials'), style: styles.label },
       { value: listText(sheet.materials), style: styles.wrap },
     ],
     [
-      { value: 'Phase', style: styles.header },
-      { value: 'Durée', style: styles.header },
-      { value: 'Organisation', style: styles.header },
-      { value: 'Déroulement / consignes', style: styles.header },
-      { value: "Paroles de l'enseignante", style: styles.header },
-      { value: 'Réponses attendues', style: styles.header },
-      { value: 'Anticipations / différenciation', style: styles.header },
+      { value: translateCurrent('xlsx.phase'), style: styles.header },
+      { value: translateCurrent('xlsx.duration'), style: styles.header },
+      { value: translateCurrent('xlsx.organization'), style: styles.header },
+      { value: translateCurrent('sheet.steps'), style: styles.header },
+      { value: translateCurrent('xlsx.teacherWords'), style: styles.header },
+      { value: translateCurrent('xlsx.expectedAnswers'), style: styles.header },
+      { value: translateCurrent('sheet.anticipations'), style: styles.header },
     ],
     ...sheet.phases.map((phase) => [
       { value: phase.name, style: styles.wrap },
@@ -153,20 +154,22 @@ function numberedBlocks(blocks: PreparationBlock[], types: PreparationBlock['typ
 function prefix(block: PreparationBlock): string {
   switch (block.type) {
     case 'teacher_relaunch':
-      return 'Relance : '
+      return translateCurrent('xlsx.relaunchPrefix')
     case 'anticipated_error':
-      return 'Erreur possible : '
+      return translateCurrent('xlsx.possibleErrorPrefix')
     case 'support':
-      return 'Aide : '
+      return translateCurrent('xlsx.supportPrefix')
     case 'extension':
-      return 'Pour aller plus loin : '
+      return translateCurrent('xlsx.extensionPrefix')
     default:
       return ''
   }
 }
 
 function listText(items: string[]): string {
-  return items.length > 0 ? items.map((item) => `- ${item}`).join('\n') : 'Non précisé'
+  return items.length > 0
+    ? items.map((item) => `- ${item}`).join('\n')
+    : translateCurrent('sheet.notSpecified')
 }
 
 function columnName(index: number): string {
@@ -204,7 +207,7 @@ function workbookXml(): string {
   return xmlHeader(
     `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
       <sheets>
-        <sheet name="Fiche" sheetId="1" r:id="rId1"/>
+        <sheet name="${escapeXml(translateCurrent('xlsx.sheetName'))}" sheetId="1" r:id="rId1"/>
       </sheets>
     </workbook>`,
   )
@@ -285,7 +288,7 @@ function slugify(value: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-  return slug || 'fiche-preparation'
+  return slug || 'preparation-sheet'
 }
 
 function downloadBlob(blob: Blob, filename: string): void {

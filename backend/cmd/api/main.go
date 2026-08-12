@@ -22,18 +22,18 @@ func main() {
 	cfg := config.Load()
 
 	if cfg.GeminiAPIKey == "" {
-		log.Println("attention : GEMINI_API_KEY n'est pas défini, la génération échouera.")
+		log.Println("warning: GEMINI_API_KEY is not set; generation will fail.")
 	}
 
 	ctx := context.Background()
 	pool, err := postgres.Connect(ctx, cfg.DatabaseURL)
 	if err != nil {
-		log.Fatalf("connexion à la base impossible : %v", err)
+		log.Fatalf("database connection failed: %v", err)
 	}
 	defer pool.Close()
 
 	if err := postgres.Migrate(ctx, pool); err != nil {
-		log.Fatalf("migration de la base impossible : %v", err)
+		log.Fatalf("database migration failed: %v", err)
 	}
 
 	users := postgres.NewUserRepository(pool)
@@ -54,9 +54,9 @@ func main() {
 	server := httpadapter.NewServer(cfg.Addr(), router)
 
 	go func() {
-		log.Printf("Prep AI API à l'écoute sur %s", cfg.Addr())
+		log.Printf("Prep AI API listening on %s", cfg.Addr())
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, stdhttp.ErrServerClosed) {
-			log.Fatalf("erreur serveur : %v", err)
+			log.Fatalf("server error: %v", err)
 		}
 	}()
 
@@ -64,10 +64,10 @@ func main() {
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 	<-stop
 
-	log.Println("arrêt en cours...")
+	log.Println("shutting down...")
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 	if err := server.Shutdown(shutdownCtx); err != nil {
-		log.Printf("arrêt non propre : %v", err)
+		log.Printf("unclean shutdown: %v", err)
 	}
 }

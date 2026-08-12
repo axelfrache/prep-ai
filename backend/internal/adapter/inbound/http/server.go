@@ -18,6 +18,8 @@ func NewRouter(prep port.PreparationService, auth port.AuthService, allowedOrigi
 	mux.HandleFunc("POST /api/auth/register", authHandler.Register)
 	mux.HandleFunc("POST /api/auth/login", authHandler.Login)
 
+	mux.Handle("GET /api/me", protected(stdhttp.HandlerFunc(authHandler.Me)))
+	mux.Handle("PATCH /api/me", protected(stdhttp.HandlerFunc(authHandler.UpdateMe)))
 	mux.Handle("POST /api/create", protected(stdhttp.HandlerFunc(handler.Create)))
 	mux.Handle("POST /api/improve", protected(stdhttp.HandlerFunc(handler.Improve)))
 	mux.Handle("GET /api/sheets", protected(stdhttp.HandlerFunc(handler.ListSheets)))
@@ -62,7 +64,7 @@ func cors(allowed []string) func(stdhttp.Handler) stdhttp.Handler {
 					w.Header().Set("Access-Control-Allow-Origin", origin)
 					w.Header().Add("Vary", "Origin")
 				}
-				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+				w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PATCH, DELETE, OPTIONS")
 				w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 				w.Header().Set("Access-Control-Max-Age", "86400")
 			}

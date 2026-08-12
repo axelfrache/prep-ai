@@ -7,19 +7,19 @@ import (
 )
 
 func validCreate() CreateRequest {
-	return CreateRequest{Subject: "Addition posée", Level: "CE2", DurationMinutes: 45}
+	return CreateRequest{Subject: "Column addition", Level: "CE2", DurationMinutes: 45}
 }
 
 func TestCreateRequestValidate_OK(t *testing.T) {
 	clean, err := validCreate().Validate()
 	if err != nil {
-		t.Fatalf("attendu nil, obtenu %v", err)
+		t.Fatalf("expected nil, got %v", err)
 	}
-	if clean.Subject != "Addition posée" || clean.DurationMinutes != 45 {
-		t.Fatalf("normalisation inattendue : %+v", clean)
+	if clean.Subject != "Column addition" || clean.DurationMinutes != 45 {
+		t.Fatalf("unexpected normalization: %+v", clean)
 	}
 	if clean.GenerationMode != GenerationModeFast {
-		t.Fatalf("mode par défaut inattendu : %q", clean.GenerationMode)
+		t.Fatalf("unexpected default mode: %q", clean.GenerationMode)
 	}
 }
 
@@ -28,10 +28,10 @@ func TestCreateRequestValidate_AdvancedGenerationMode(t *testing.T) {
 	req.GenerationMode = GenerationModeAdvanced
 	clean, err := req.Validate()
 	if err != nil {
-		t.Fatalf("attendu nil, obtenu %v", err)
+		t.Fatalf("expected nil, got %v", err)
 	}
 	if clean.GenerationMode != GenerationModeAdvanced {
-		t.Fatalf("mode avancé inattendu : %q", clean.GenerationMode)
+		t.Fatalf("unexpected advanced mode: %q", clean.GenerationMode)
 	}
 }
 
@@ -41,17 +41,17 @@ func TestCreateRequestValidate_Errors(t *testing.T) {
 		req  CreateRequest
 		kind ErrorKind
 	}{
-		{"sujet vide", CreateRequest{Level: "CE2", DurationMinutes: 45}, KindInvalid},
-		{"niveau vide", CreateRequest{Subject: "x", DurationMinutes: 45}, KindInvalid},
-		{"durée trop courte", CreateRequest{Subject: "x", Level: "CE2", DurationMinutes: 5}, KindInvalid},
-		{"durée trop longue", CreateRequest{Subject: "x", Level: "CE2", DurationMinutes: 500}, KindInvalid},
+		{"empty subject", CreateRequest{Level: "CE2", DurationMinutes: 45}, KindInvalid},
+		{"empty level", CreateRequest{Subject: "x", DurationMinutes: 45}, KindInvalid},
+		{"duration too short", CreateRequest{Subject: "x", Level: "CE2", DurationMinutes: 5}, KindInvalid},
+		{"duration too long", CreateRequest{Subject: "x", Level: "CE2", DurationMinutes: 500}, KindInvalid},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
 			_, err := tc.req.Validate()
 			var ve *AppError
 			if !errors.As(err, &ve) || ve.Kind != tc.kind {
-				t.Fatalf("attendu ValidationError kind=%v, obtenu %v", tc.kind, err)
+				t.Fatalf("expected ValidationError kind=%v, got %v", tc.kind, err)
 			}
 		})
 	}
@@ -63,7 +63,7 @@ func TestValidateDocument_UnsupportedType(t *testing.T) {
 	_, err := req.Validate()
 	var ve *AppError
 	if !errors.As(err, &ve) || ve.Kind != KindUnsupportedMedia {
-		t.Fatalf("attendu KindUnsupportedMedia, obtenu %v", err)
+		t.Fatalf("expected KindUnsupportedMedia, got %v", err)
 	}
 }
 
@@ -73,7 +73,7 @@ func TestValidateTotalText_TooLarge(t *testing.T) {
 	_, err := req.Validate()
 	var ve *AppError
 	if !errors.As(err, &ve) || ve.Kind != KindTooLarge {
-		t.Fatalf("attendu KindTooLarge, obtenu %v", err)
+		t.Fatalf("expected KindTooLarge, got %v", err)
 	}
 }
 
@@ -86,12 +86,12 @@ func TestSheetValid(t *testing.T) {
 		}},
 	}
 	if !good.Valid() {
-		t.Fatal("attendu valide")
+		t.Fatal("expected valid")
 	}
 
 	bad := good
 	bad.Phases[0].Blocks = []Block{{Type: BlockType("wrong"), Text: "x"}}
 	if bad.Valid() {
-		t.Fatal("attendu invalide pour type de bloc inconnu")
+		t.Fatal("expected invalid for unknown block type")
 	}
 }

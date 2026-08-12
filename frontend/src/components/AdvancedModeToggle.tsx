@@ -1,6 +1,7 @@
 import { Sparkles } from 'lucide-react'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
+import { useI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 type AdvancedModeToggleProps = {
@@ -14,6 +15,8 @@ export function AdvancedModeToggle({
   onCheckedChange,
   className,
 }: AdvancedModeToggleProps) {
+  const { t } = useI18n()
+
   return (
     <div
       className={cn(
@@ -33,10 +36,10 @@ export function AdvancedModeToggle({
         </span>
         <div className="min-w-0 space-y-1">
           <Label htmlFor="advanced-mode" className="cursor-pointer text-base font-medium">
-            Raisonnement avancé
+            {t('advanced.title')}
           </Label>
           <p className="text-sm leading-relaxed text-muted-foreground">
-            Utilise Gemini 3.6 Flash pour un meilleur rendu. Les quotas sont plus limités.
+            {t('advanced.description')}
           </p>
         </div>
       </div>
@@ -44,7 +47,7 @@ export function AdvancedModeToggle({
         id="advanced-mode"
         checked={checked}
         onCheckedChange={onCheckedChange}
-        aria-label="Activer le raisonnement avancé"
+        aria-label={t('advanced.aria')}
         className="mt-1"
       />
     </div>

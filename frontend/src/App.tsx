@@ -4,6 +4,7 @@ import { CreatePage } from '@/pages/CreatePage'
 import { HomePage } from '@/pages/HomePage'
 import { ImprovePage } from '@/pages/ImprovePage'
 import { LoginPage } from '@/pages/LoginPage'
+import { SettingsPage } from '@/pages/SettingsPage'
 import { useAuth } from '@/lib/auth'
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -38,6 +39,7 @@ function App() {
         <Route path="create" element={<CreatePage />} />
         <Route path="improve" element={<ImprovePage />} />
         <Route path="improve/:sheetId" element={<ImprovePage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

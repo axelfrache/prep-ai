@@ -12,6 +12,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { useI18n } from '@/lib/i18n'
 import { exportSheetToXlsx } from '@/lib/xlsxExport'
 import type { PreparationSheet } from '@/types/preparation'
 
@@ -32,22 +33,23 @@ export function SheetPreviewDialog({
   const isControlled = open !== undefined
   const isOpen = isControlled ? open : internalOpen
   const setOpen = isControlled ? (onOpenChange ?? (() => {})) : setInternalOpen
+  const { t } = useI18n()
 
   async function copy() {
     try {
-      await navigator.clipboard.writeText(sheetToText(sheet))
-      toast.success('Fiche copiée dans le presse-papier.')
+      await navigator.clipboard.writeText(sheetToText(sheet, t))
+      toast.success(t('sheet.copySuccess'))
     } catch {
-      toast.error('Impossible de copier la fiche.')
+      toast.error(t('sheet.copyError'))
     }
   }
 
   async function exportXlsx() {
     try {
       await exportSheetToXlsx(sheet)
-      toast.success('Export Excel généré.')
+      toast.success(t('sheet.exportSuccess'))
     } catch {
-      toast.error("Impossible d'exporter la fiche.")
+      toast.error(t('sheet.exportError'))
     }
   }
 
@@ -58,11 +60,11 @@ export function SheetPreviewDialog({
         <DialogHeader className="border-b px-4 py-4 text-left sm:px-6">
           <div className="min-w-0">
             <DialogTitle className="pr-8 leading-snug sm:truncate">{sheet.title}</DialogTitle>
-            <DialogDescription>Aperçu de la fiche de préparation</DialogDescription>
+            <DialogDescription>{t('sheet.previewDescription')}</DialogDescription>
           </div>
           <div className="flex flex-wrap gap-2 pr-8 sm:absolute sm:right-10 sm:top-4">
             <Button variant="outline" size="sm" onClick={copy}>
-              <Copy className="size-4" /> Copier
+              <Copy className="size-4" /> {t('action.copy')}
             </Button>
             <Button variant="outline" size="sm" onClick={exportXlsx}>
               <Download className="size-4" /> Excel

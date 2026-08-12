@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from '@/lib/auth'
+import { I18nProvider } from '@/lib/i18n'
 import { Toaster } from '@/components/ui/sonner'
 import { ThemeProvider } from 'next-themes'
 
@@ -15,12 +16,14 @@ createRoot(document.getElementById('root')!).render(
       enableSystem={false}
       storageKey="prep-ai-theme"
     >
-      <BrowserRouter>
-        <AuthProvider>
-          <App />
-        </AuthProvider>
-      </BrowserRouter>
-      <Toaster richColors position="top-center" />
+      <I18nProvider>
+        <BrowserRouter>
+          <AuthProvider>
+            <App />
+          </AuthProvider>
+        </BrowserRouter>
+        <Toaster richColors position="top-center" />
+      </I18nProvider>
     </ThemeProvider>
   </StrictMode>,
 )

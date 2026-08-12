@@ -172,9 +172,22 @@ func (c credentialsDTO) toDomain() domain.Credentials {
 	return domain.Credentials{Email: c.Email, Password: c.Password}
 }
 
+type profileUpdateDTO struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (p profileUpdateDTO) toDomain() domain.ProfileUpdateRequest {
+	return domain.ProfileUpdateRequest{Email: p.Email, Password: p.Password}
+}
+
 type userDTO struct {
 	ID    string `json:"id"`
 	Email string `json:"email"`
+}
+
+func newUserDTO(user domain.User) userDTO {
+	return userDTO{ID: user.ID, Email: user.Email}
 }
 
 type authResponseDTO struct {
@@ -185,6 +198,6 @@ type authResponseDTO struct {
 func newAuthResponse(user domain.User, token string) authResponseDTO {
 	return authResponseDTO{
 		Token: token,
-		User:  userDTO{ID: user.ID, Email: user.Email},
+		User:  newUserDTO(user),
 	}
 }

@@ -21,13 +21,13 @@ func (r CreateRequest) Validate() (CreateRequest, error) {
 	}
 
 	if out.Subject == "" {
-		return out, invalid("La matière ou notion est obligatoire.")
+		return out, invalid("Subject or topic is required.")
 	}
 	if out.Level == "" {
-		return out, invalid("Le niveau est obligatoire.")
+		return out, invalid("Level is required.")
 	}
 	if out.DurationMinutes < MinDuration || out.DurationMinutes > MaxDuration {
-		return out, invalid("La durée doit être comprise entre %d et %d minutes.", MinDuration, MaxDuration)
+		return out, invalid("Duration must be between %d and %d minutes.", MinDuration, MaxDuration)
 	}
 
 	resources, err := validateDocuments(r.Resources)
@@ -70,7 +70,7 @@ func (r ImproveRequest) Validate() (ImproveRequest, error) {
 
 func validateDocuments(docs []Document) ([]Document, error) {
 	if len(docs) > MaxDocuments {
-		return nil, invalid("Trop de documents envoyés. Limitez-vous à %d fichiers.", MaxDocuments)
+		return nil, invalid("Too many documents submitted. Limit the request to %d files.", MaxDocuments)
 	}
 	out := make([]Document, 0, len(docs))
 	for _, doc := range docs {
@@ -89,13 +89,13 @@ func validateDocument(doc Document) (Document, error) {
 	docType := normalizeType(doc.Type)
 
 	if name == "" {
-		return Document{}, invalid("Le nom du document est manquant.")
+		return Document{}, invalid("Document name is missing.")
 	}
 	if !SupportedDocumentTypes[docType] {
-		return Document{}, unsupported("Un document envoyé utilise un format non supporté.")
+		return Document{}, unsupported("A submitted document uses an unsupported format.")
 	}
 	if text == "" {
-		return Document{}, invalid("Le texte extrait du document est vide.")
+		return Document{}, invalid("The extracted document text is empty.")
 	}
 	if len(name) > MaxDocNameChars {
 		name = name[:MaxDocNameChars]
@@ -109,7 +109,7 @@ func checkTotalText(values []string) error {
 		total += len(v)
 	}
 	if total > MaxTextChars {
-		return tooLarge("Le texte envoyé est trop long. Réduisez les ressources.")
+		return tooLarge("The submitted text is too long. Reduce the resources.")
 	}
 	return nil
 }

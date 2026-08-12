@@ -59,7 +59,7 @@ func blockTypeEnum() []string {
 func (c *Client) Generate(ctx context.Context, prompt string, mode domain.GenerationMode) (domain.Sheet, error) {
 	if c.apiKey == "" {
 		return domain.Sheet{}, domain.NewGenerationError(http.StatusInternalServerError,
-			"La clé Gemini n'est pas configurée sur le serveur.")
+			"Gemini API key is not configured on the server.")
 	}
 
 	body, err := json.Marshal(geminiRequest{
@@ -71,7 +71,7 @@ func (c *Client) Generate(ctx context.Context, prompt string, mode domain.Genera
 	})
 	if err != nil {
 		return domain.Sheet{}, domain.NewGenerationError(http.StatusInternalServerError,
-			"Impossible de préparer la requête de génération.")
+			"Unable to prepare the generation request.")
 	}
 
 	models := c.modelsFor(mode)
@@ -86,7 +86,7 @@ func (c *Client) Generate(ctx context.Context, prompt string, mode domain.Genera
 	}
 
 	return domain.Sheet{}, domain.NewGenerationError(http.StatusBadGateway,
-		"Gemini n'a pas pu générer la préparation.")
+		"Gemini could not generate the preparation sheet.")
 }
 
 func (c *Client) generateWithModel(ctx context.Context, model string, body []byte) (domain.Sheet, int, error) {
@@ -94,7 +94,7 @@ func (c *Client) generateWithModel(ctx context.Context, model string, body []byt
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
 	if err != nil {
 		return domain.Sheet{}, 0, domain.NewGenerationError(http.StatusInternalServerError,
-			"Impossible de préparer la requête de génération.")
+			"Unable to prepare the generation request.")
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("x-goog-api-key", c.apiKey)
@@ -102,7 +102,7 @@ func (c *Client) generateWithModel(ctx context.Context, model string, body []byt
 	resp, err := c.http.Do(req)
 	if err != nil {
 		return domain.Sheet{}, 0, domain.NewGenerationError(http.StatusBadGateway,
-			"Le service de génération est injoignable pour le moment.")
+			"The generation service is currently unreachable.")
 	}
 	defer resp.Body.Close()
 
@@ -136,11 +136,11 @@ func (c *Client) httpError(model string, status int, raw []byte) error {
 	switch status {
 	case http.StatusTooManyRequests:
 		return domain.NewGenerationError(http.StatusTooManyRequests,
-			"Gemini est temporairement trop sollicité.")
+			"Gemini is temporarily overloaded.")
 	case http.StatusNotFound:
 		return domain.NewGenerationError(http.StatusBadGateway,
-			"Le modèle Gemini configuré (%s) n'est pas disponible pour cette clé. "+
-				"Vérifiez GEMINI_DEFAULT_MODEL, GEMINI_ADVANCED_MODEL ou GEMINI_FALLBACK_MODEL.", model)
+			"The configured Gemini model (%s) is not available for this key. "+
+				"Check GEMINI_DEFAULT_MODEL, GEMINI_ADVANCED_MODEL, or GEMINI_FALLBACK_MODEL.", model)
 	}
 
 	details := readAPIError(raw)
@@ -149,22 +149,22 @@ func (c *Client) httpError(model string, status int, raw []byte) error {
 		outStatus = http.StatusBadGateway
 	}
 	if details != "" {
-		return domain.NewGenerationError(outStatus, "Gemini a refusé la demande : %s", details)
+		return domain.NewGenerationError(outStatus, "Gemini rejected the request: %s", details)
 	}
-	return domain.NewGenerationError(outStatus, "Gemini n'a pas pu générer la préparation.")
+	return domain.NewGenerationError(outStatus, "Gemini could not generate the preparation sheet.")
 }
 
 func decodeSheet(raw []byte) (domain.Sheet, error) {
 	var payload geminiResponse
 	if err := json.Unmarshal(raw, &payload); err != nil {
 		return domain.Sheet{}, domain.NewGenerationError(http.StatusBadGateway,
-			"Gemini a renvoyé une réponse illisible.")
+			"Gemini returned an unreadable response.")
 	}
 
 	text := payload.text()
 	if text == "" {
 		return domain.Sheet{}, domain.NewGenerationError(http.StatusBadGateway,
-			"Gemini a renvoyé une réponse vide.")
+			"Gemini returned an empty response.")
 	}
 
 	wrapper, err := parseSheetJSON(text)
@@ -175,7 +175,7 @@ func decodeSheet(raw []byte) (domain.Sheet, error) {
 	sheet := wrapper.Sheet.toDomain()
 	if !sheet.Valid() {
 		return domain.Sheet{}, domain.NewGenerationError(http.StatusBadGateway,
-			"Gemini a renvoyé une réponse JSON invalide.")
+			"Gemini returned an invalid JSON response.")
 	}
 	return sheet, nil
 }
@@ -191,11 +191,11 @@ func parseSheetJSON(text string) (sheetWrapper, error) {
 	match := jsonObjectRe.FindString(text)
 	if match == "" {
 		return wrapper, domain.NewGenerationError(http.StatusBadGateway,
-			"Gemini a renvoyé une réponse non JSON.")
+			"Gemini returned a non-JSON response.")
 	}
 	if err := json.Unmarshal([]byte(match), &wrapper); err != nil {
 		return wrapper, domain.NewGenerationError(http.StatusBadGateway,
-			"Gemini a renvoyé une réponse JSON illisible.")
+			"Gemini returned an unreadable JSON response.")
 	}
 	return wrapper, nil
 }

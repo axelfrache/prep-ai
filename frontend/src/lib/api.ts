@@ -5,7 +5,9 @@ import type {
   ImproveSheetPayload,
   SavedSheet,
   SheetSummary,
+  UpdateProfilePayload,
 } from '@/types/preparation'
+import { translateCurrent } from '@/lib/i18n'
 
 const API_BASE = import.meta.env.VITE_API_BASE ?? ''
 const TOKEN_KEY = 'prepai.token'
@@ -44,10 +46,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   try {
     response = await fetch(`${API_BASE}${path}`, { ...init, headers })
   } catch {
-    throw new ApiError(
-      'Impossible de joindre le service. Vérifiez votre connexion puis réessayez.',
-      0,
-    )
+    throw new ApiError(translateCurrent('api.network'), 0)
   }
 
   if (response.status === 401 && token) {
@@ -66,7 +65,7 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   try {
     return (await response.json()) as T
   } catch {
-    throw new ApiError('La réponse reçue est invalide.', response.status)
+    throw new ApiError(translateCurrent('api.invalidResponse'), response.status)
   }
 }
 
@@ -82,6 +81,14 @@ export function login(email: string, password: string): Promise<AuthResponse> {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   })
+}
+
+export function getMe(): Promise<AuthResponse['user']> {
+  return request('/api/me')
+}
+
+export function updateMe(payload: UpdateProfilePayload): Promise<AuthResponse['user']> {
+  return request('/api/me', { method: 'PATCH', body: JSON.stringify(payload) })
 }
 
 export function createSheet(payload: CreateSheetPayload): Promise<SavedSheet> {
@@ -117,12 +124,12 @@ async function readableError(response: Response): Promise<string> {
     return backendMessage
   }
   if (response.status === 429) {
-    return 'Le service est temporairement trop sollicité. Réessayez dans quelques instants.'
+    return translateCurrent('api.tooManyRequests')
   }
   if (response.status >= 500) {
-    return 'Le service rencontre une erreur temporaire. Réessayez plus tard.'
+    return translateCurrent('api.badGateway')
   }
-  return "La demande n'a pas pu être traitée."
+  return translateCurrent('api.badRequest')
 }
 
 async function readBackendError(response: Response): Promise<string> {

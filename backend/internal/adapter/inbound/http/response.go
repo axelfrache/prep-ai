@@ -32,7 +32,7 @@ func writeError(w stdhttp.ResponseWriter, err error) {
 	}
 
 	writeJSON(w, stdhttp.StatusInternalServerError, errorBody{
-		Error: "Une erreur inattendue est survenue.",
+		Error: "An unexpected error occurred.",
 	})
 }
 

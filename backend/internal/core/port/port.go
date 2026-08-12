@@ -19,6 +19,8 @@ type AuthService interface {
 	Register(ctx context.Context, creds domain.Credentials) (domain.User, string, error)
 	Login(ctx context.Context, creds domain.Credentials) (domain.User, string, error)
 	Authenticate(ctx context.Context, token string) (string, error)
+	GetUser(ctx context.Context, userID string) (domain.User, error)
+	UpdateProfile(ctx context.Context, userID string, req domain.ProfileUpdateRequest) (domain.User, error)
 }
 
 type SheetGenerator interface {
@@ -27,7 +29,9 @@ type SheetGenerator interface {
 
 type UserRepository interface {
 	Create(ctx context.Context, email, passwordHash string) (domain.User, error)
+	FindByID(ctx context.Context, id string) (domain.User, error)
 	FindByEmail(ctx context.Context, email string) (domain.User, error)
+	UpdateProfile(ctx context.Context, id, email, passwordHash string) (domain.User, error)
 }
 
 type SheetRepository interface {

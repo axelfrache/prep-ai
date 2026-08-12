@@ -85,3 +85,8 @@ export type AuthResponse = {
   token: string
   user: AuthUser
 }
+
+export type UpdateProfilePayload = {
+  email: string
+  password?: string
+}

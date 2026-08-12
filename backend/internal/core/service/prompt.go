@@ -12,10 +12,10 @@ import (
 var createSystemPrompt string
 
 const jsonContract = `==================================================
-FORMAT JSON OBLIGATOIRE POUR L'APPLICATION
+MANDATORY JSON FORMAT FOR THE APPLICATION
 ==================================================
 
-Réponds uniquement avec ce JSON structuré :
+Return only this structured JSON. All lesson-sheet content values must be written in French:
 
 {
   "sheet": {
@@ -40,7 +40,7 @@ Réponds uniquement avec ce JSON structuré :
   }
 }
 
-Types de blocs autorisés :
+Allowed block types:
 - instruction
 - teacher_speech
 - expected_answer
@@ -49,8 +49,8 @@ Types de blocs autorisés :
 - support
 - extension
 
-Ne génère pas de HTML, Markdown, tableau HTML, couleur ou style visuel.
-Utilise teacher_speech et teacher_relaunch pour ce que l'enseignante peut dire directement.`
+Do not generate HTML, Markdown, HTML tables, colors, or visual styling.
+Use teacher_speech and teacher_relaunch for what the teacher can say directly.`
 
 func buildCreatePrompt(req domain.CreateRequest) string {
 	var b strings.Builder
@@ -58,14 +58,14 @@ func buildCreatePrompt(req domain.CreateRequest) string {
 	b.WriteString("\n\n")
 	b.WriteString(jsonContract)
 	b.WriteString("\n\n==================================================\n")
-	b.WriteString("INFORMATIONS DYNAMIQUES\n")
+	b.WriteString("DYNAMIC INPUTS\n")
 	b.WriteString("==================================================\n\n")
-	fmt.Fprintf(&b, "Matière / notion : %s\n", req.Subject)
-	fmt.Fprintf(&b, "Niveau : %s\n", req.Level)
-	fmt.Fprintf(&b, "Durée : %d min\n", req.DurationMinutes)
-	b.WriteString(optionalLine("Période éventuelle", "Période : non précisée", req.Period))
-	b.WriteString(optionalLine("Remarques", "Remarques : aucune", req.Notes))
-	b.WriteString("\nRessources :\n")
+	fmt.Fprintf(&b, "Subject / topic: %s\n", req.Subject)
+	fmt.Fprintf(&b, "Level: %s\n", req.Level)
+	fmt.Fprintf(&b, "Duration: %d min\n", req.DurationMinutes)
+	b.WriteString(optionalLine("Optional period", "Period: not specified", req.Period))
+	b.WriteString(optionalLine("Notes", "Notes: none", req.Notes))
+	b.WriteString("\nResources:\n")
 	b.WriteString(formatResources(req.Resources))
 	b.WriteString("\n")
 	return b.String()
@@ -73,47 +73,48 @@ func buildCreatePrompt(req domain.CreateRequest) string {
 
 func buildImprovePrompt(req domain.ImproveRequest) string {
 	var b strings.Builder
-	b.WriteString(`Tu es un assistant de préparation pédagogique pour une enseignante de Cycle 2, principalement en classe de CE2.
+	b.WriteString(`You are a lesson-preparation assistant for a Cycle 2 teacher, mainly for CE2.
 
-Tu dois améliorer une fiche existante, sans la transformer en document académique énorme.
+You must improve an existing preparation sheet without turning it into a huge academic document.
+All generated lesson-sheet content must be written in French.
 
-Philosophie produit :
-- l'utilisatrice fournit principalement sa fiche actuelle ;
-- elle peut ajouter quelques ressources ou une remarque ;
-- tu ne poses pas de questions supplémentaires ;
-- tu conserves la structure et les bonnes idées ;
-- tu complètes ce qui manque pour rendre la fiche directement utilisable.
+Product philosophy:
+- the user mainly provides her current sheet;
+- she can add a few resources or a note;
+- you do not ask additional questions;
+- you preserve the structure and good ideas;
+- you complete what is missing so the sheet can be used directly.
 
-Amélioration à appliquer :
-- adapter systématiquement la fiche au niveau CE2, sauf indication contraire explicite ;
-- conserver le tableau s'il existe ;
-- vérifier et ajuster les durées ;
-- clarifier l'objectif sous la forme "L'enfant doit être capable de..." ;
-- écrire des questions, consignes et relances réellement prononçables ;
-- ajouter des réponses attendues aux questions importantes ;
-- anticiper les erreurs fréquentes ;
-- ajouter une différenciation concrète sans surcharger ;
-- réduire le matériel si possible, en privilégiant tableau, vidéoprojecteur, ardoise, cahier, manuel ;
-- garder un style simple, direct et opérationnel.
+Improvement rules:
+- adapt the sheet to CE2 by default unless there is an explicit contrary instruction;
+- preserve the table if one exists;
+- verify and adjust durations;
+- clarify the objective with the French wording "L'enfant doit être capable de...";
+- write questions, instructions, and follow-ups that can actually be said aloud;
+- add expected answers for important questions;
+- anticipate frequent mistakes;
+- add concrete differentiation without overloading the sheet;
+- reduce materials where possible, prioritizing board, projector, slate, notebook, and textbook;
+- keep the style simple, direct, and operational.
 
-Contraintes de sortie :
-- répondre uniquement avec un objet JSON valide ;
-- respecter exactement le schéma demandé ;
-- ne jamais produire de HTML, Markdown, couleur ou style visuel ;
-- utiliser uniquement les types de blocs autorisés ;
-- identifier les paroles de l'enseignante avec teacher_speech ou teacher_relaunch.
+Output constraints:
+- return only a valid JSON object;
+- follow the requested schema exactly;
+- never produce HTML, Markdown, colors, or visual styling;
+- use only the allowed block types;
+- identify teacher speech with teacher_speech or teacher_relaunch.
 
 `)
 	b.WriteString(jsonContract)
-	fmt.Fprintf(&b, "\n\nFiche existante (%s) :\n%s\n", req.ExistingSheet.Name, req.ExistingSheet.Text)
-	b.WriteString("\nRessources complémentaires :\n")
-	b.WriteString(formatResourcesOr(req.Resources, "Aucune ressource complémentaire."))
-	fmt.Fprintf(&b, "\n\nRemarques :\n%s\n", orDefault(req.Notes, "Aucune remarque."))
+	fmt.Fprintf(&b, "\n\nExisting sheet (%s):\n%s\n", req.ExistingSheet.Name, req.ExistingSheet.Text)
+	b.WriteString("\nAdditional resources:\n")
+	b.WriteString(formatResourcesOr(req.Resources, "No additional resource."))
+	fmt.Fprintf(&b, "\n\nNotes:\n%s\n", orDefault(req.Notes, "No notes."))
 	return b.String()
 }
 
 func formatResources(resources []domain.Document) string {
-	return formatResourcesOr(resources, "Aucune ressource fournie.")
+	return formatResourcesOr(resources, "No resource provided.")
 }
 
 func formatResourcesOr(resources []domain.Document, empty string) string {
@@ -122,7 +123,7 @@ func formatResourcesOr(resources []domain.Document, empty string) string {
 	}
 	parts := make([]string, len(resources))
 	for i, r := range resources {
-		parts[i] = fmt.Sprintf("Ressource %d - %s\n%s", i+1, r.Name, r.Text)
+		parts[i] = fmt.Sprintf("Resource %d - %s\n%s", i+1, r.Name, r.Text)
 	}
 	return strings.Join(parts, "\n\n")
 }
@@ -143,23 +144,23 @@ func orDefault(value, fallback string) string {
 
 func formatSheetForImprovement(sheet domain.Sheet) string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "Titre : %s\n", sheet.Title)
-	fmt.Fprintf(&b, "Matière : %s\n", sheet.Subject)
-	fmt.Fprintf(&b, "Niveau : %s\n", sheet.Level)
-	fmt.Fprintf(&b, "Durée : %d min\n", sheet.DurationMinutes)
-	fmt.Fprintf(&b, "Objectif : %s\n", sheet.Objective)
-	b.WriteString("Compétences :\n")
+	fmt.Fprintf(&b, "Title: %s\n", sheet.Title)
+	fmt.Fprintf(&b, "Subject: %s\n", sheet.Subject)
+	fmt.Fprintf(&b, "Level: %s\n", sheet.Level)
+	fmt.Fprintf(&b, "Duration: %d min\n", sheet.DurationMinutes)
+	fmt.Fprintf(&b, "Objective: %s\n", sheet.Objective)
+	b.WriteString("Skills:\n")
 	for _, item := range sheet.Competencies {
 		fmt.Fprintf(&b, "- %s\n", item)
 	}
-	b.WriteString("Matériel :\n")
+	b.WriteString("Materials:\n")
 	for _, item := range sheet.Materials {
 		fmt.Fprintf(&b, "- %s\n", item)
 	}
-	b.WriteString("\nPhases :\n")
+	b.WriteString("\nPhases:\n")
 	for _, phase := range sheet.Phases {
 		fmt.Fprintf(&b, "\n%s (%d min)\n", phase.Name, phase.DurationMinutes)
-		fmt.Fprintf(&b, "Organisation : %s\n", phase.Organization)
+		fmt.Fprintf(&b, "Organization: %s\n", phase.Organization)
 		for _, block := range phase.Blocks {
 			fmt.Fprintf(&b, "- %s : %s\n", blockLabel(block.Type), block.Text)
 		}
@@ -170,18 +171,18 @@ func formatSheetForImprovement(sheet domain.Sheet) string {
 func blockLabel(blockType domain.BlockType) string {
 	switch blockType {
 	case domain.BlockTeacherSpeech:
-		return "Parole enseignante"
+		return "Teacher speech"
 	case domain.BlockTeacherRelaunch:
-		return "Relance enseignante"
+		return "Teacher follow-up"
 	case domain.BlockExpectedAnswer:
-		return "Réponse attendue"
+		return "Expected answer"
 	case domain.BlockAnticipatedError:
-		return "Erreur anticipée"
+		return "Anticipated error"
 	case domain.BlockSupport:
-		return "Aide élèves en difficulté"
+		return "Support for struggling students"
 	case domain.BlockExtension:
-		return "Prolongement élèves rapides"
+		return "Extension for fast finishers"
 	default:
-		return "Consigne"
+		return "Instruction"
 	}
 }

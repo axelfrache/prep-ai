@@ -4,10 +4,12 @@ import { Link } from 'react-router-dom'
 import { SheetPreviewDialog } from '@/components/SheetPreviewDialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { useI18n } from '@/lib/i18n'
 import type { PreparationSheet } from '@/types/preparation'
 
 export function GenerationResult({ sheet }: { sheet: PreparationSheet }) {
   const [open, setOpen] = useState(false)
+  const { t } = useI18n()
 
   useEffect(() => {
     setOpen(true)
@@ -19,7 +21,7 @@ export function GenerationResult({ sheet }: { sheet: PreparationSheet }) {
         <div className="flex items-start gap-3">
           <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-primary" />
           <div>
-            <p className="font-medium">Fiche générée et enregistrée</p>
+            <p className="font-medium">{t('generation.saved')}</p>
             <p className="text-sm text-muted-foreground">{sheet.title}</p>
           </div>
         </div>
@@ -30,12 +32,12 @@ export function GenerationResult({ sheet }: { sheet: PreparationSheet }) {
             onOpenChange={setOpen}
             trigger={
               <Button variant="outline" size="sm">
-                <Eye className="size-4" /> Aperçu
+                <Eye className="size-4" /> {t('action.preview')}
               </Button>
             }
           />
           <Button asChild size="sm">
-            <Link to="/">Mes fiches</Link>
+            <Link to="/">{t('home.mySheets')}</Link>
           </Button>
         </div>
       </CardContent>

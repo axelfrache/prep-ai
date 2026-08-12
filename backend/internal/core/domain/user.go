@@ -25,32 +25,51 @@ type Credentials struct {
 	Password string
 }
 
+type ProfileUpdateRequest struct {
+	Email    string
+	Password string
+}
+
 func (c Credentials) Validate() (Credentials, error) {
 	email := strings.ToLower(strings.TrimSpace(c.Email))
 	if !emailRe.MatchString(email) {
-		return Credentials{}, invalid("Adresse email invalide.")
+		return Credentials{}, invalid("Invalid email address.")
 	}
 	if len(c.Password) < MinPasswordLength {
-		return Credentials{}, invalid("Le mot de passe doit contenir au moins %d caractères.", MinPasswordLength)
+		return Credentials{}, invalid("Password must contain at least %d characters.", MinPasswordLength)
 	}
 	if len(c.Password) > MaxPasswordLength {
-		return Credentials{}, invalid("Le mot de passe est trop long.")
+		return Credentials{}, invalid("Password is too long.")
 	}
 	return Credentials{Email: email, Password: c.Password}, nil
 }
 
+func (r ProfileUpdateRequest) Validate() (ProfileUpdateRequest, error) {
+	email := strings.ToLower(strings.TrimSpace(r.Email))
+	if !emailRe.MatchString(email) {
+		return ProfileUpdateRequest{}, invalid("Invalid email address.")
+	}
+	if r.Password != "" && len(r.Password) < MinPasswordLength {
+		return ProfileUpdateRequest{}, invalid("Password must contain at least %d characters.", MinPasswordLength)
+	}
+	if len(r.Password) > MaxPasswordLength {
+		return ProfileUpdateRequest{}, invalid("Password is too long.")
+	}
+	return ProfileUpdateRequest{Email: email, Password: r.Password}, nil
+}
+
 func ErrEmailAlreadyUsed() error {
-	return conflict("Un compte existe déjà avec cet email.")
+	return conflict("An account already exists with this email.")
 }
 
 func ErrInvalidCredentials() error {
-	return unauthorized("Email ou mot de passe incorrect.")
+	return unauthorized("Invalid email or password.")
 }
 
 func ErrUnauthenticated() error {
-	return unauthorized("Authentification requise.")
+	return unauthorized("Authentication required.")
 }
 
 func ErrSheetNotFound() error {
-	return notFound("Fiche introuvable.")
+	return notFound("Sheet not found.")
 }

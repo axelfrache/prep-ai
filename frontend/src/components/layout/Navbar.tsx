@@ -5,6 +5,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   LogOut,
+  Settings,
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -19,16 +20,24 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useAuth } from '@/lib/auth'
+import { useI18n, type TranslationKey } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
 const links = [
-  { to: '/', label: 'Accueil', icon: LayoutDashboard, end: true },
-  { to: '/create', label: 'Créer', icon: FilePlus2 },
-  { to: '/improve', label: 'Améliorer', icon: FilePenLine },
-]
+  { to: '/', labelKey: 'global.home', icon: LayoutDashboard, end: true },
+  { to: '/create', labelKey: 'create.title', icon: FilePlus2 },
+  { to: '/improve', labelKey: 'improve.title', icon: FilePenLine },
+  { to: '/settings', labelKey: 'settings.title', icon: Settings },
+] satisfies Array<{
+  to: string
+  labelKey: TranslationKey
+  icon: React.ComponentType<{ className?: string }>
+  end?: boolean
+}>
 
 export function Navbar() {
   const { user, logout } = useAuth()
+  const { t } = useI18n()
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
@@ -36,7 +45,7 @@ export function Navbar() {
         <NavLink
           to="/"
           className="flex shrink-0 items-center gap-3 rounded-lg pr-2 font-semibold outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-          aria-label="Retour au tableau de bord Prep AI"
+          aria-label={t('nav.returnHome')}
         >
           <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <GraduationCap className="size-5" />
@@ -46,7 +55,7 @@ export function Navbar() {
 
         <nav
           className="order-3 flex w-full items-center gap-1 overflow-x-auto sm:order-none sm:w-auto"
-          aria-label="Navigation principale"
+          aria-label={t('nav.main')}
         >
           {links.map((link) => (
             <NavLink
@@ -63,7 +72,7 @@ export function Navbar() {
               }
             >
               <link.icon className="size-4" />
-              {link.label}
+              {t(link.labelKey)}
             </NavLink>
           ))}
         </nav>
@@ -88,12 +97,14 @@ export function Navbar() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>
-                <span className="block text-xs font-normal text-muted-foreground">Connecté</span>
+                <span className="block text-xs font-normal text-muted-foreground">
+                  {t('nav.connected')}
+                </span>
                 <span className="block truncate">{user?.email}</span>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout} variant="destructive">
-                <LogOut className="size-4" /> Déconnexion
+                <LogOut className="size-4" /> {t('nav.logout')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

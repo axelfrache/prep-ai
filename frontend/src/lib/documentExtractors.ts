@@ -2,6 +2,7 @@ import JSZip from 'jszip'
 import mammoth from 'mammoth'
 import * as pdfjs from 'pdfjs-dist'
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.mjs?url'
+import { translateCurrent } from '@/lib/i18n'
 import type { ExtractedDocument } from '@/types/preparation'
 
 pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl
@@ -23,7 +24,7 @@ export function extractDocuments(files: FileList | File[]): Promise<ExtractedDoc
 export async function extractDocumentText(file: File): Promise<ExtractedDocument> {
   if (file.size > MAX_FILE_BYTES) {
     throw new DocumentExtractionError(
-      `${file.name} est trop volumineux. Utilisez un fichier de moins de 8 Mo.`,
+      translateCurrent('document.tooLarge', { fileName: file.name }),
     )
   }
 
@@ -44,12 +45,10 @@ export async function extractDocumentText(file: File): Promise<ExtractedDocument
   if (normalized.length < MIN_TEXT_LENGTH) {
     if (extension === 'pdf') {
       throw new DocumentExtractionError(
-        `${file.name} semble être un PDF scanné ou sans texte exploitable.`,
+        translateCurrent('document.scanned', { fileName: file.name }),
       )
     }
-    throw new DocumentExtractionError(
-      `Aucun texte exploitable n'a pu être extrait de ${file.name}.`,
-    )
+    throw new DocumentExtractionError(translateCurrent('document.empty', { fileName: file.name }))
   }
 
   return { name: file.name, type: extension, text: normalized }
@@ -82,7 +81,9 @@ async function extractOdtText(file: File): Promise<string> {
   const content = zip.file('content.xml')
 
   if (!content) {
-    throw new DocumentExtractionError(`${file.name} n'est pas un fichier ODT valide.`)
+    throw new DocumentExtractionError(
+      translateCurrent('document.invalidOdt', { fileName: file.name }),
+    )
   }
 
   const xml = await content.async('text')
@@ -95,9 +96,7 @@ async function extractOdtText(file: File): Promise<string> {
 }
 
 function unsupportedFile(fileName: string): never {
-  throw new DocumentExtractionError(
-    `${fileName} n'est pas supporté. Formats acceptés : PDF, DOCX, ODT, TXT.`,
-  )
+  throw new DocumentExtractionError(translateCurrent('document.unsupported', { fileName }))
 }
 
 function normalizeText(text: string): string {

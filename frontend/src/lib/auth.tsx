@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import * as api from '@/lib/api'
+import { translateCurrent } from '@/lib/i18n'
 import type { AuthUser } from '@/types/preparation'
 
 const USER_KEY = 'prepai.user'
@@ -8,6 +9,7 @@ type AuthContextValue = {
   user: AuthUser | null
   login: (email: string, password: string) => Promise<void>
   register: (email: string, password: string) => Promise<void>
+  updateProfile: (email: string, password?: string) => Promise<AuthUser>
   logout: () => void
 }
 
@@ -61,7 +63,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [persist],
   )
 
-  const value = useMemo(() => ({ user, login, register, logout }), [user, login, register, logout])
+  const updateProfile = useCallback(async (email: string, password?: string) => {
+    const nextUser = await api.updateMe({ email, password })
+    localStorage.setItem(USER_KEY, JSON.stringify(nextUser))
+    setUser(nextUser)
+    return nextUser
+  }, [])
+
+  const value = useMemo(
+    () => ({ user, login, register, updateProfile, logout }),
+    [user, login, register, updateProfile, logout],
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
@@ -69,7 +81,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext)
   if (!ctx) {
-    throw new Error('useAuth doit être utilisé dans un AuthProvider')
+    throw new Error(translateCurrent('auth.contextError'))
   }
   return ctx
 }

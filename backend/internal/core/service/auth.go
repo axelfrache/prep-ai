@@ -76,3 +76,41 @@ func (a *Auth) Authenticate(_ context.Context, token string) (string, error) {
 	}
 	return userID, nil
 }
+
+func (a *Auth) GetUser(ctx context.Context, userID string) (domain.User, error) {
+	user, err := a.users.FindByID(ctx, userID)
+	if err != nil {
+		if errors.Is(err, port.ErrNotFound) {
+			return domain.User{}, domain.ErrUnauthenticated()
+		}
+		return domain.User{}, err
+	}
+	return user, nil
+}
+
+func (a *Auth) UpdateProfile(ctx context.Context, userID string, req domain.ProfileUpdateRequest) (domain.User, error) {
+	clean, err := req.Validate()
+	if err != nil {
+		return domain.User{}, err
+	}
+
+	passwordHash := ""
+	if clean.Password != "" {
+		passwordHash, err = a.hasher.Hash(clean.Password)
+		if err != nil {
+			return domain.User{}, err
+		}
+	}
+
+	user, err := a.users.UpdateProfile(ctx, userID, clean.Email, passwordHash)
+	if err != nil {
+		if errors.Is(err, port.ErrEmailTaken) {
+			return domain.User{}, domain.ErrEmailAlreadyUsed()
+		}
+		if errors.Is(err, port.ErrNotFound) {
+			return domain.User{}, domain.ErrUnauthenticated()
+		}
+		return domain.User{}, err
+	}
+	return user, nil
+}

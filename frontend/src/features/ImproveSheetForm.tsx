@@ -11,6 +11,7 @@ import {
   extractDocuments,
   extractDocumentText,
 } from '@/lib/documentExtractors'
+import { translateCurrent, useI18n } from '@/lib/i18n'
 import type { GenerationMode, SavedSheet } from '@/types/preparation'
 
 type ImproveSheetFormProps = {
@@ -26,6 +27,7 @@ export function ImproveSheetForm({
   onResult,
   onError,
 }: ImproveSheetFormProps) {
+  const { t } = useI18n()
   const [sheetFile, setSheetFile] = useState<File | null>(null)
   const [resourceFiles, setResourceFiles] = useState<FileList | null>(null)
   const [notes, setNotes] = useState('')
@@ -37,7 +39,7 @@ export function ImproveSheetForm({
     onError('')
 
     if (!savedSheetId && !sheetFile) {
-      return onError('Importez votre fiche existante pour l’améliorer.')
+      return onError(t('improve.formMissingSheet'))
     }
 
     try {
@@ -67,14 +69,14 @@ export function ImproveSheetForm({
     <form className="space-y-5" onSubmit={handleSubmit}>
       {savedSheetId ? (
         <div className="rounded-lg border bg-primary/5 px-4 py-3">
-          <p className="text-sm font-medium">Fiche sélectionnée</p>
+          <p className="text-sm font-medium">{t('improve.savedSelected')}</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            {savedSheetTitle ?? 'Fiche enregistrée dans votre historique'}
+            {savedSheetTitle ?? t('improve.savedFallback')}
           </p>
         </div>
       ) : (
         <div className="space-y-2">
-          <Label htmlFor="existing-sheet">Fiche existante</Label>
+          <Label htmlFor="existing-sheet">{t('improve.sheetInputLabel')}</Label>
           <Input
             id="existing-sheet"
             type="file"
@@ -82,14 +84,12 @@ export function ImproveSheetForm({
             accept=".pdf,.docx,.odt,.txt,application/pdf,text/plain"
             onChange={(event) => setSheetFile(event.target.files?.[0] ?? null)}
           />
-          <p className="text-xs text-muted-foreground">
-            PDF, DOCX, ODT ou TXT. La structure de votre fiche est conservée.
-          </p>
+          <p className="text-xs text-muted-foreground">{t('improve.sheetInputHelp')}</p>
         </div>
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="improve-resources">Ressources complémentaires</Label>
+        <Label htmlFor="improve-resources">{t('improve.resources')}</Label>
         <Input
           id="improve-resources"
           type="file"
@@ -100,13 +100,13 @@ export function ImproveSheetForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="improve-notes">Remarques</Label>
+        <Label htmlFor="improve-notes">{t('improve.notes')}</Label>
         <Textarea
           id="improve-notes"
           rows={3}
           value={notes}
           onChange={(event) => setNotes(event.target.value)}
-          placeholder="Ex. clarifier l’objectif, ajouter de la différenciation..."
+          placeholder={t('improve.notesPlaceholder')}
         />
       </div>
 
@@ -114,7 +114,7 @@ export function ImproveSheetForm({
 
       <Button type="submit" className="w-full" disabled={submitting}>
         {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-        {submitting ? 'Amélioration en cours...' : 'Améliorer ma fiche'}
+        {submitting ? t('improve.submitting') : t('improve.submit')}
       </Button>
     </form>
   )
@@ -124,5 +124,5 @@ function readError(error: unknown): string {
   if (error instanceof DocumentExtractionError || error instanceof Error) {
     return error.message
   }
-  return 'Une erreur inattendue est survenue.'
+  return translateCurrent('global.unexpectedError')
 }

@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { createSheet } from '@/lib/api'
 import { DocumentExtractionError, extractDocuments } from '@/lib/documentExtractors'
+import { translateCurrent, useI18n } from '@/lib/i18n'
 import type { SavedSheet } from '@/types/preparation'
 
 type CreateSheetFormProps = {
@@ -24,6 +25,7 @@ type CreateSheetFormProps = {
 const levelOptions = ['CE2']
 
 export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
+  const { t } = useI18n()
   const [subject, setSubject] = useState('')
   const [level, setLevel] = useState('CE2')
   const [duration, setDuration] = useState('45')
@@ -38,10 +40,10 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
     onError('')
 
     const durationMinutes = Number(duration)
-    if (!subject.trim()) return onError('La matière ou notion est obligatoire.')
-    if (!level.trim()) return onError('Le niveau est obligatoire.')
+    if (!subject.trim()) return onError(t('create.subjectError'))
+    if (!level.trim()) return onError(t('create.levelError'))
     if (!Number.isInteger(durationMinutes) || durationMinutes < 10 || durationMinutes > 180) {
-      return onError('La durée doit être comprise entre 10 et 180 minutes.')
+      return onError(t('create.durationError'))
     }
 
     try {
@@ -67,22 +69,22 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       <div className="space-y-2">
-        <Label htmlFor="subject">Matière / notion</Label>
+        <Label htmlFor="subject">{t('create.subject')}</Label>
         <Input
           id="subject"
           required
           value={subject}
           onChange={(event) => setSubject(event.target.value)}
-          placeholder="Ex. Mathématiques - poser une addition"
+          placeholder={t('create.subjectPlaceholder')}
         />
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
-          <Label htmlFor="level">Niveau</Label>
+          <Label htmlFor="level">{t('create.level')}</Label>
           <Select value={level} onValueChange={setLevel}>
             <SelectTrigger id="level" className="w-full">
-              <SelectValue placeholder="Niveau" />
+              <SelectValue placeholder={t('create.level')} />
             </SelectTrigger>
             <SelectContent>
               {levelOptions.map((option) => (
@@ -94,7 +96,7 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="duration">Durée (min)</Label>
+          <Label htmlFor="duration">{t('create.duration')}</Label>
           <Input
             id="duration"
             type="number"
@@ -108,7 +110,7 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="resources">Ressources</Label>
+        <Label htmlFor="resources">{t('create.resources')}</Label>
         <Input
           id="resources"
           type="file"
@@ -116,31 +118,29 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
           accept=".pdf,.docx,.odt,.txt,application/pdf,text/plain"
           onChange={(event) => setFiles(event.target.files)}
         />
-        <p className="text-xs text-muted-foreground">
-          PDF, DOCX, ODT ou TXT. Le texte est extrait dans votre navigateur.
-        </p>
+        <p className="text-xs text-muted-foreground">{t('create.resourcesHelp')}</p>
       </div>
 
       <details className="rounded-lg border bg-muted/30 px-4 py-3 text-sm">
-        <summary className="cursor-pointer font-medium">Ajouter une précision</summary>
+        <summary className="cursor-pointer font-medium">{t('create.details')}</summary>
         <div className="mt-4 space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="create-notes">Remarques ou contraintes</Label>
+            <Label htmlFor="create-notes">{t('create.notes')}</Label>
             <Textarea
               id="create-notes"
               rows={3}
               value={notes}
               onChange={(event) => setNotes(event.target.value)}
-              placeholder="Ex. séance de découverte, manuel à utiliser, point à éviter..."
+              placeholder={t('create.notesPlaceholder')}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="period">Période</Label>
+            <Label htmlFor="period">{t('create.period')}</Label>
             <Input
               id="period"
               value={period}
               onChange={(event) => setPeriod(event.target.value)}
-              placeholder="Optionnel"
+              placeholder={t('global.optional')}
             />
           </div>
         </div>
@@ -150,7 +150,7 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
 
       <Button type="submit" className="w-full" disabled={submitting}>
         {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-        {submitting ? 'Préparation de votre fiche...' : 'Générer ma fiche'}
+        {submitting ? t('create.submitting') : t('create.submit')}
       </Button>
     </form>
   )
@@ -160,5 +160,5 @@ function readError(error: unknown): string {
   if (error instanceof DocumentExtractionError || error instanceof Error) {
     return error.message
   }
-  return 'Une erreur inattendue est survenue.'
+  return translateCurrent('global.unexpectedError')
 }

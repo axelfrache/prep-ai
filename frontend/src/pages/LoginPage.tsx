@@ -6,10 +6,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useAuth } from '@/lib/auth'
+import { useI18n } from '@/lib/i18n'
 
 export function LoginPage() {
   const { login, register } = useAuth()
   const navigate = useNavigate()
+  const { t } = useI18n()
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -28,7 +30,7 @@ export function LoginPage() {
       }
       navigate('/', { replace: true })
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue.')
+      setError(err instanceof Error ? err.message : t('global.unexpectedError'))
     } finally {
       setSubmitting(false)
     }
@@ -44,9 +46,7 @@ export function LoginPage() {
           <div className="space-y-1.5">
             <h1 className="text-2xl font-semibold tracking-tight">Prep AI</h1>
             <p className="text-sm leading-6 text-muted-foreground">
-              {mode === 'login'
-                ? 'Connectez-vous pour retrouver vos fiches.'
-                : 'Créez un compte pour conserver vos préparations.'}
+              {mode === 'login' ? t('login.subtitle') : t('login.registerSubtitle')}
             </p>
           </div>
         </div>
@@ -59,14 +59,14 @@ export function LoginPage() {
           }}
         >
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="login">Connexion</TabsTrigger>
-            <TabsTrigger value="register">Inscription</TabsTrigger>
+            <TabsTrigger value="login">{t('login.login')}</TabsTrigger>
+            <TabsTrigger value="register">{t('login.register')}</TabsTrigger>
           </TabsList>
         </Tabs>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t('login.email')}</Label>
             <Input
               id="email"
               type="email"
@@ -80,7 +80,7 @@ export function LoginPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="password">Mot de passe</Label>
+            <Label htmlFor="password">{t('login.password')}</Label>
             <Input
               id="password"
               type="password"
@@ -88,7 +88,7 @@ export function LoginPage() {
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              placeholder={mode === 'register' ? 'Au moins 8 caractères' : ''}
+              placeholder={mode === 'register' ? t('login.passwordPlaceholder') : ''}
             />
           </div>
 
@@ -96,7 +96,7 @@ export function LoginPage() {
 
           <Button type="submit" className="w-full" disabled={submitting}>
             {submitting ? <Loader2 className="size-4 animate-spin" /> : null}
-            {mode === 'login' ? 'Se connecter' : 'Créer mon compte'}
+            {mode === 'login' ? t('login.submit') : t('login.registerSubmit')}
           </Button>
         </form>
       </div>

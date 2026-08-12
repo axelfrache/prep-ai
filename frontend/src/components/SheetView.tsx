@@ -7,6 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useI18n, type TranslationKey } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 import type {
   BlockType,
@@ -19,6 +20,7 @@ const anticipationTypes: BlockType[] = ['anticipated_error', 'support', 'extensi
 
 export function SheetView({ sheet }: { sheet: PreparationSheet }) {
   const plannedDuration = sheet.phases.reduce((sum, phase) => sum + phase.durationMinutes, 0)
+  const { t } = useI18n()
 
   return (
     <div className="space-y-6">
@@ -26,16 +28,16 @@ export function SheetView({ sheet }: { sheet: PreparationSheet }) {
         <Badge variant="secondary">{sheet.subject}</Badge>
         <Badge variant="secondary">{sheet.level}</Badge>
         <Badge variant="secondary">{sheet.durationMinutes} min</Badge>
-        <Badge variant="outline">{plannedDuration} min planifiées</Badge>
+        <Badge variant="outline">{t('sheet.plannedMinutes', { minutes: plannedDuration })}</Badge>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <MetaBlock title="Compétences" items={sheet.competencies} />
+        <MetaBlock title={t('sheet.skills')} items={sheet.competencies} />
         <div className="rounded-lg border bg-card p-4">
-          <h3 className="mb-2 text-sm font-semibold">Objectif</h3>
+          <h3 className="mb-2 text-sm font-semibold">{t('sheet.objective')}</h3>
           <p className="text-sm text-muted-foreground">{sheet.objective}</p>
         </div>
-        <MetaBlock title="Matériel" items={sheet.materials} />
+        <MetaBlock title={t('sheet.materials')} items={sheet.materials} />
       </div>
 
       <div className="space-y-3 lg:hidden">
@@ -48,10 +50,10 @@ export function SheetView({ sheet }: { sheet: PreparationSheet }) {
         <Table className="min-w-[1120px] table-fixed">
           <TableHeader>
             <TableRow className="bg-muted/50">
-              <TableHead className="w-[16%]">Phase / Durée</TableHead>
-              <TableHead className="w-[42%]">Déroulement / Consignes</TableHead>
-              <TableHead className="w-[18%]">Organisation</TableHead>
-              <TableHead className="w-[24%]">Anticipations / Différenciation</TableHead>
+              <TableHead className="w-[16%]">{t('sheet.phaseDuration')}</TableHead>
+              <TableHead className="w-[42%]">{t('sheet.steps')}</TableHead>
+              <TableHead className="w-[18%]">{t('sheet.organization')}</TableHead>
+              <TableHead className="w-[24%]">{t('sheet.anticipations')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -62,13 +64,13 @@ export function SheetView({ sheet }: { sheet: PreparationSheet }) {
                   <p className="text-muted-foreground">{phase.durationMinutes} min</p>
                 </TableCell>
                 <TableCell className="whitespace-normal p-3 align-top">
-                  {renderBlocks(phase.blocks, false)}
+                  {renderBlocks(phase.blocks, false, t)}
                 </TableCell>
                 <TableCell className="whitespace-normal p-3 align-top text-muted-foreground">
                   {phase.organization}
                 </TableCell>
                 <TableCell className="whitespace-normal p-3 align-top">
-                  {renderAnticipations(phase)}
+                  {renderAnticipations(phase, t)}
                 </TableCell>
               </TableRow>
             ))}
@@ -80,7 +82,8 @@ export function SheetView({ sheet }: { sheet: PreparationSheet }) {
 }
 
 function MetaBlock({ title, items }: { title: string; items: string[] }) {
-  const safeItems = items.length > 0 ? items : ['Non précisé']
+  const { t } = useI18n()
+  const safeItems = items.length > 0 ? items : [t('sheet.notSpecified')]
   return (
     <div className="rounded-lg border bg-card p-4">
       <h3 className="mb-2 text-sm font-semibold">{title}</h3>
@@ -94,6 +97,8 @@ function MetaBlock({ title, items }: { title: string; items: string[] }) {
 }
 
 function PhaseCard({ phase }: { phase: PreparationPhase }) {
+  const { t } = useI18n()
+
   return (
     <article className="space-y-4 rounded-lg border bg-card p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -106,13 +111,11 @@ function PhaseCard({ phase }: { phase: PreparationPhase }) {
         </Badge>
       </div>
 
-      <PhaseSection title="Déroulement / Consignes">
-        {renderBlocks(phase.blocks, false)}
-      </PhaseSection>
+      <PhaseSection title={t('sheet.steps')}>{renderBlocks(phase.blocks, false, t)}</PhaseSection>
 
-      <PhaseSection title="Anticipations / Différenciation">
-        {renderAnticipations(phase) ?? (
-          <p className="text-sm text-muted-foreground">Aucune anticipation précisée.</p>
+      <PhaseSection title={t('sheet.anticipations')}>
+        {renderAnticipations(phase, t) ?? (
+          <p className="text-sm text-muted-foreground">{t('sheet.noAnticipation')}</p>
         )}
       </PhaseSection>
     </article>
@@ -128,7 +131,11 @@ function PhaseSection({ title, children }: { title: string; children: React.Reac
   )
 }
 
-function renderBlocks(blocks: PreparationBlock[], anticipations: boolean) {
+function renderBlocks(
+  blocks: PreparationBlock[],
+  anticipations: boolean,
+  t: (key: TranslationKey) => string,
+) {
   const filtered = blocks.filter((block) =>
     anticipations
       ? anticipationTypes.includes(block.type)
@@ -140,18 +147,18 @@ function renderBlocks(blocks: PreparationBlock[], anticipations: boolean) {
   return (
     <div className="space-y-2">
       {filtered.map((block, index) => (
-        <Block key={`${block.type}-${index}`} block={block} />
+        <Block key={`${block.type}-${index}`} block={block} t={t} />
       ))}
     </div>
   )
 }
 
-function renderAnticipations(phase: PreparationPhase) {
-  return renderBlocks(phase.blocks, true)
+function renderAnticipations(phase: PreparationPhase, t: (key: TranslationKey) => string) {
+  return renderBlocks(phase.blocks, true, t)
 }
 
-function Block({ block }: { block: PreparationBlock }) {
-  const label = blockLabel(block.type)
+function Block({ block, t }: { block: PreparationBlock; t: (key: TranslationKey) => string }) {
+  const label = blockLabel(block.type, t)
   const isTeacher = block.type === 'teacher_speech' || block.type === 'teacher_relaunch'
 
   return (
@@ -168,27 +175,30 @@ function Block({ block }: { block: PreparationBlock }) {
   )
 }
 
-export function blockLabel(type: BlockType): string {
+export function blockLabel(type: BlockType, t: (key: TranslationKey) => string): string {
   switch (type) {
     case 'expected_answer':
-      return 'Réponse attendue'
+      return t('sheet.expectedAnswer')
     case 'anticipated_error':
-      return 'Anticipation'
+      return t('sheet.anticipated')
     case 'support':
-      return 'Élèves en difficulté'
+      return t('sheet.difficultStudents')
     case 'extension':
-      return 'Élèves rapides'
+      return t('sheet.fastStudents')
     default:
       return ''
   }
 }
 
-export function sheetToText(sheet: PreparationSheet): string {
+export function sheetToText(
+  sheet: PreparationSheet,
+  t: (key: TranslationKey) => string = (key) => key,
+): string {
   const phases = sheet.phases
     .map((phase) => {
       const blocks = phase.blocks
         .map((block) => {
-          const label = blockLabel(block.type)
+          const label = blockLabel(block.type, t)
           return `- ${label ? `${label} : ` : ''}${block.text}`
         })
         .join('\n')
@@ -196,5 +206,5 @@ export function sheetToText(sheet: PreparationSheet): string {
     })
     .join('\n\n')
 
-  return `${sheet.title}\n${sheet.subject} - ${sheet.level} - ${sheet.durationMinutes} min\n\nObjectif : ${sheet.objective}\n\n${phases}`
+  return `${sheet.title}\n${sheet.subject} - ${sheet.level} - ${sheet.durationMinutes} min\n\n${t('sheet.objective')} : ${sheet.objective}\n\n${phases}`
 }

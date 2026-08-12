@@ -43,3 +43,27 @@ func (h *AuthHandler) Login(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 	}
 	writeJSON(w, stdhttp.StatusOK, newAuthResponse(user, token))
 }
+
+func (h *AuthHandler) Me(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	user, err := h.auth.GetUser(r.Context(), userIDFromContext(r.Context()))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, stdhttp.StatusOK, newUserDTO(user))
+}
+
+func (h *AuthHandler) UpdateMe(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	var dto profileUpdateDTO
+	if err := decodeJSON(w, r, &dto); err != nil {
+		writeError(w, err)
+		return
+	}
+
+	user, err := h.auth.UpdateProfile(r.Context(), userIDFromContext(r.Context()), dto.toDomain())
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, stdhttp.StatusOK, newUserDTO(user))
+}

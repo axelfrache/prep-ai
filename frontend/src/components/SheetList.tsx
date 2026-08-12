@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { deleteSheet, getSheet, listSheets } from '@/lib/api'
+import { useI18n } from '@/lib/i18n'
 import type { PreparationSheet, SheetSummary } from '@/types/preparation'
 
 type SheetListProps = {
@@ -22,6 +23,7 @@ type SheetListProps = {
 }
 
 export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
+  const { t } = useI18n()
   const [items, setItems] = useState<SheetSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [openingId, setOpeningId] = useState<string | null>(null)
@@ -37,14 +39,14 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
       .then((data) => {
         if (active) setItems(data)
       })
-      .catch((err) => onError(err instanceof Error ? err.message : 'Chargement impossible.'))
+      .catch((err) => onError(err instanceof Error ? err.message : t('sheet.loadError')))
       .finally(() => {
         if (active) setLoading(false)
       })
     return () => {
       active = false
     }
-  }, [refreshKey, onError])
+  }, [refreshKey, onError, t])
 
   async function openPreview(id: string) {
     setOpeningId(id)
@@ -53,7 +55,7 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
       setPreview(saved.sheet)
       setPreviewOpen(true)
     } catch (err) {
-      onError(err instanceof Error ? err.message : 'Ouverture impossible.')
+      onError(err instanceof Error ? err.message : t('sheet.openError'))
     } finally {
       setOpeningId(null)
     }
@@ -65,9 +67,9 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
       await deleteSheet(item.id)
       setItems((current) => current.filter((sheet) => sheet.id !== item.id))
       setPendingDelete(null)
-      toast.success('Fiche supprimée.')
+      toast.success(t('sheet.deleteSuccess'))
     } catch (err) {
-      onError(err instanceof Error ? err.message : 'Suppression impossible.')
+      onError(err instanceof Error ? err.message : t('sheet.deleteError'))
     } finally {
       setDeletingId(null)
     }
@@ -87,10 +89,8 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
     return (
       <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed py-12 text-center">
         <FileText className="size-8 text-muted-foreground" />
-        <p className="text-sm font-medium">Aucune fiche pour le moment</p>
-        <p className="text-sm text-muted-foreground">
-          Créez votre première fiche pour la retrouver ici.
-        </p>
+        <p className="text-sm font-medium">{t('sheet.emptyTitle')}</p>
+        <p className="text-sm text-muted-foreground">{t('sheet.emptyDescription')}</p>
       </div>
     )
   }
@@ -122,12 +122,12 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
                 ) : (
                   <Eye className="size-4" />
                 )}
-                Aperçu
+                {t('action.preview')}
               </Button>
               <Button asChild variant="outline" size="sm">
                 <Link to={`/improve/${item.id}`}>
                   <FilePenLine className="size-4" />
-                  Éditer
+                  {t('action.edit')}
                 </Link>
               </Button>
               <Button
@@ -136,7 +136,7 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
                 className="text-muted-foreground hover:text-destructive"
                 disabled={deletingId === item.id}
                 onClick={() => setPendingDelete(item)}
-                aria-label={`Supprimer ${item.title}`}
+                aria-label={`${t('action.delete')} ${item.title}`}
               >
                 {deletingId === item.id ? (
                   <Loader2 className="size-4 animate-spin" />
@@ -163,10 +163,8 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Supprimer cette fiche ?</DialogTitle>
-            <DialogDescription>
-              Cette action est définitive. La fiche ne sera plus disponible dans votre historique.
-            </DialogDescription>
+            <DialogTitle>{t('sheet.deleteTitle')}</DialogTitle>
+            <DialogDescription>{t('sheet.deleteDescription')}</DialogDescription>
           </DialogHeader>
 
           {pendingDelete ? (
@@ -186,7 +184,7 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
               disabled={Boolean(deletingId)}
               onClick={() => setPendingDelete(null)}
             >
-              Annuler
+              {t('action.cancel')}
             </Button>
             <Button
               type="button"
@@ -203,7 +201,7 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
               ) : (
                 <Trash2 className="size-4" />
               )}
-              Supprimer
+              {t('action.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>

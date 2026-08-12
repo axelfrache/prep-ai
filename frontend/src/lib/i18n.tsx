@@ -1,0 +1,349 @@
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+
+export type Locale = 'fr' | 'en'
+
+type Params = Record<string, string | number>
+type I18nContextValue = {
+  locale: Locale
+  setLocale: (locale: Locale) => void
+  toggleLocale: () => void
+  t: (key: TranslationKey, params?: Params) => string
+}
+
+const STORAGE_KEY = 'prep-ai-locale'
+const defaultLocale: Locale = 'fr'
+
+const translations = {
+  fr: {
+    'action.cancel': 'Annuler',
+    'action.copy': 'Copier',
+    'action.delete': 'Supprimer',
+    'action.edit': 'Éditer',
+    'action.preview': 'Aperçu',
+    'action.exportExcel': 'Excel',
+    'advanced.aria': 'Activer le raisonnement avancé',
+    'advanced.description':
+      'Utilise Gemini 3.6 Flash pour un meilleur rendu. Les quotas sont plus limités.',
+    'advanced.title': 'Raisonnement avancé',
+    'api.badGateway': 'Le service rencontre une erreur temporaire. Réessayez plus tard.',
+    'api.badRequest': "La demande n'a pas pu être traitée.",
+    'api.invalidResponse': 'La réponse reçue est invalide.',
+    'api.network': 'Impossible de joindre le service. Vérifiez votre connexion puis réessayez.',
+    'api.tooManyRequests':
+      'Le service est temporairement trop sollicité. Réessayez dans quelques instants.',
+    'auth.contextError': 'useAuth doit être utilisé dans un AuthProvider',
+    'create.description':
+      'Indiquez ce que vous voulez travailler, Prep AI prépare le déroulement de la séance.',
+    'create.details': 'Ajouter une précision',
+    'create.duration': 'Durée (min)',
+    'create.durationError': 'La durée doit être comprise entre 10 et 180 minutes.',
+    'create.level': 'Niveau',
+    'create.levelError': 'Le niveau est obligatoire.',
+    'create.notes': 'Remarques ou contraintes',
+    'create.notesPlaceholder': 'Ex. séance de découverte, manuel à utiliser, point à éviter...',
+    'create.period': 'Période',
+    'create.resources': 'Ressources',
+    'create.resourcesHelp': 'PDF, DOCX, ODT ou TXT. Le texte est extrait dans votre navigateur.',
+    'create.startHelp': 'Matière, niveau et durée suffisent pour démarrer.',
+    'create.subject': 'Matière / notion',
+    'create.subjectError': 'La matière ou notion est obligatoire.',
+    'create.subjectPlaceholder': 'Ex. Mathématiques - poser une addition',
+    'create.submit': 'Générer ma fiche',
+    'create.submitting': 'Préparation de votre fiche...',
+    'create.title': 'Créer une fiche',
+    'document.empty': "Aucun texte exploitable n'a pu être extrait de {fileName}.",
+    'document.tooLarge': '{fileName} est trop volumineux. Utilisez un fichier de moins de 8 Mo.',
+    'document.invalidOdt': "{fileName} n'est pas un fichier ODT valide.",
+    'document.scanned': '{fileName} semble être un PDF scanné ou sans texte exploitable.',
+    'document.unsupported':
+      "{fileName} n'est pas supporté. Formats acceptés : PDF, DOCX, ODT, TXT.",
+    'generation.saved': 'Fiche générée et enregistrée',
+    'global.home': 'Accueil',
+    'global.optional': 'Optionnel',
+    'global.unexpectedError': 'Une erreur inattendue est survenue.',
+    'home.createDescription': 'Générer une séance à partir de quelques informations.',
+    'home.dashboard': 'Tableau de bord',
+    'home.description': 'Reprenez une fiche ou lancez une nouvelle préparation.',
+    'home.improveDescription': 'Compléter une fiche existante sans perdre sa structure.',
+    'home.mySheets': 'Mes fiches',
+    'improve.description':
+      'Importez votre fiche actuelle, Prep AI la complète sans perdre sa structure.',
+    'improve.formMissingSheet': 'Importez votre fiche existante pour l’améliorer.',
+    'improve.loadingSheet': 'Chargement de la fiche...',
+    'improve.notes': 'Remarques',
+    'improve.notesPlaceholder': 'Ex. clarifier l’objectif, ajouter de la différenciation...',
+    'improve.resources': 'Ressources complémentaires',
+    'improve.savedDescription':
+      'Prep AI repart de cette fiche enregistrée et génère une version améliorée.',
+    'improve.savedFallback': 'Fiche enregistrée dans votre historique',
+    'improve.savedHelp': 'La fiche actuelle est récupérée depuis votre historique.',
+    'improve.savedSelected': 'Fiche sélectionnée',
+    'improve.savedTitle': 'Fiche enregistrée à améliorer',
+    'improve.sheetHelp': 'Formats acceptés : PDF, DOCX, ODT, TXT.',
+    'improve.sheetInputHelp': 'PDF, DOCX, ODT ou TXT. La structure de votre fiche est conservée.',
+    'improve.sheetInputLabel': 'Fiche existante',
+    'improve.sheetNotFound': 'Fiche introuvable.',
+    'improve.submit': 'Améliorer ma fiche',
+    'improve.submitting': 'Amélioration en cours...',
+    'improve.title': 'Améliorer une fiche',
+    'language.aria': 'Changer de langue',
+    'login.email': 'Email',
+    'login.login': 'Connexion',
+    'login.password': 'Mot de passe',
+    'login.passwordPlaceholder': 'Au moins 8 caractères',
+    'login.register': 'Inscription',
+    'login.registerSubmit': 'Créer mon compte',
+    'login.registerSubtitle': 'Créez un compte pour conserver vos préparations.',
+    'login.submit': 'Se connecter',
+    'login.subtitle': 'Connectez-vous pour retrouver vos fiches.',
+    'nav.connected': 'Connecté',
+    'nav.logout': 'Déconnexion',
+    'nav.main': 'Navigation principale',
+    'nav.returnHome': 'Retour au tableau de bord Prep AI',
+    'settings.account': 'Compte',
+    'settings.description': 'Gérez votre compte et vos préférences.',
+    'settings.emailHelp': 'Cette adresse sert à vous connecter.',
+    'settings.language': 'Langue',
+    'settings.languageDescription': "Choisissez la langue de l'interface.",
+    'settings.password': 'Nouveau mot de passe',
+    'settings.passwordHelp': 'Laissez vide pour conserver votre mot de passe actuel.',
+    'settings.passwordPlaceholder': 'Au moins 8 caractères',
+    'settings.profile': 'Profil utilisateur',
+    'settings.save': 'Enregistrer',
+    'settings.saved': 'Paramètres enregistrés.',
+    'settings.saving': 'Enregistrement...',
+    'settings.title': 'Paramètres',
+    'sheet.anticipated': 'Anticipation',
+    'sheet.anticipations': 'Anticipations / Différenciation',
+    'sheet.copyError': 'Impossible de copier la fiche.',
+    'sheet.copySuccess': 'Fiche copiée dans le presse-papier.',
+    'sheet.deleteDescription':
+      'Cette action est définitive. La fiche ne sera plus disponible dans votre historique.',
+    'sheet.deleteSuccess': 'Fiche supprimée.',
+    'sheet.deleteTitle': 'Supprimer cette fiche ?',
+    'sheet.difficultStudents': 'Élèves en difficulté',
+    'sheet.emptyDescription': 'Créez votre première fiche pour la retrouver ici.',
+    'sheet.emptyTitle': 'Aucune fiche pour le moment',
+    'sheet.expectedAnswer': 'Réponse attendue',
+    'sheet.exportError': "Impossible d'exporter la fiche.",
+    'sheet.exportSuccess': 'Export Excel généré.',
+    'sheet.fastStudents': 'Élèves rapides',
+    'sheet.materials': 'Matériel',
+    'sheet.noAnticipation': 'Aucune anticipation précisée.',
+    'sheet.notSpecified': 'Non précisé',
+    'sheet.objective': 'Objectif',
+    'sheet.openError': 'Ouverture impossible.',
+    'sheet.organization': 'Organisation',
+    'sheet.phaseDuration': 'Phase / Durée',
+    'sheet.plannedMinutes': '{minutes} min planifiées',
+    'sheet.previewDescription': 'Aperçu de la fiche de préparation',
+    'sheet.skills': 'Compétences',
+    'sheet.steps': 'Déroulement / Consignes',
+    'sheet.loadError': 'Chargement impossible.',
+    'sheet.deleteError': 'Suppression impossible.',
+    'theme.dark': 'Activer le thème sombre',
+    'theme.light': 'Activer le thème clair',
+    'xlsx.expectedAnswers': 'Réponses attendues',
+    'xlsx.duration': 'Durée',
+    'xlsx.levelDuration': 'Niveau / durée',
+    'xlsx.materials': 'Matériel',
+    'xlsx.objective': 'Objectif',
+    'xlsx.organization': 'Organisation',
+    'xlsx.phase': 'Phase',
+    'xlsx.possibleErrorPrefix': 'Erreur possible : ',
+    'xlsx.relaunchPrefix': 'Relance : ',
+    'xlsx.sheetName': 'Fiche',
+    'xlsx.supportPrefix': 'Aide : ',
+    'xlsx.teacherWords': "Paroles de l'enseignante",
+    'xlsx.extensionPrefix': 'Pour aller plus loin : ',
+  },
+  en: {
+    'action.cancel': 'Cancel',
+    'action.copy': 'Copy',
+    'action.delete': 'Delete',
+    'action.edit': 'Edit',
+    'action.preview': 'Preview',
+    'action.exportExcel': 'Excel',
+    'advanced.aria': 'Enable advanced reasoning',
+    'advanced.description': 'Uses Gemini 3.6 Flash for better output. Quotas are more limited.',
+    'advanced.title': 'Advanced reasoning',
+    'api.badGateway': 'The service is temporarily unavailable. Try again later.',
+    'api.badRequest': 'The request could not be processed.',
+    'api.invalidResponse': 'The received response is invalid.',
+    'api.network': 'Unable to reach the service. Check your connection and try again.',
+    'api.tooManyRequests': 'The service is temporarily overloaded. Try again shortly.',
+    'auth.contextError': 'useAuth must be used inside an AuthProvider',
+    'create.description': 'Tell Prep AI what you want to teach and it prepares the lesson flow.',
+    'create.details': 'Add details',
+    'create.duration': 'Duration (min)',
+    'create.durationError': 'Duration must be between 10 and 180 minutes.',
+    'create.level': 'Level',
+    'create.levelError': 'Level is required.',
+    'create.notes': 'Notes or constraints',
+    'create.notesPlaceholder': 'E.g. discovery lesson, textbook to use, point to avoid...',
+    'create.period': 'Period',
+    'create.resources': 'Resources',
+    'create.resourcesHelp': 'PDF, DOCX, ODT or TXT. Text is extracted in your browser.',
+    'create.startHelp': 'Subject, level and duration are enough to start.',
+    'create.subject': 'Subject / topic',
+    'create.subjectError': 'Subject or topic is required.',
+    'create.subjectPlaceholder': 'E.g. Mathematics - column addition',
+    'create.submit': 'Generate my sheet',
+    'create.submitting': 'Preparing your sheet...',
+    'create.title': 'Create a sheet',
+    'document.empty': 'No usable text could be extracted from {fileName}.',
+    'document.tooLarge': '{fileName} is too large. Use a file smaller than 8 MB.',
+    'document.invalidOdt': '{fileName} is not a valid ODT file.',
+    'document.scanned': '{fileName} looks like a scanned PDF or has no usable text.',
+    'document.unsupported': '{fileName} is not supported. Accepted formats: PDF, DOCX, ODT, TXT.',
+    'generation.saved': 'Sheet generated and saved',
+    'global.home': 'Home',
+    'global.optional': 'Optional',
+    'global.unexpectedError': 'An unexpected error occurred.',
+    'home.createDescription': 'Generate a lesson from a few details.',
+    'home.dashboard': 'Dashboard',
+    'home.description': 'Resume a sheet or start a new preparation.',
+    'home.improveDescription': 'Improve an existing sheet without losing its structure.',
+    'home.mySheets': 'My sheets',
+    'improve.description':
+      'Import your current sheet; Prep AI completes it without losing its structure.',
+    'improve.formMissingSheet': 'Import your existing sheet to improve it.',
+    'improve.loadingSheet': 'Loading sheet...',
+    'improve.notes': 'Notes',
+    'improve.notesPlaceholder': 'E.g. clarify the objective, add differentiation...',
+    'improve.resources': 'Additional resources',
+    'improve.savedDescription':
+      'Prep AI starts from this saved sheet and generates an improved version.',
+    'improve.savedFallback': 'Sheet saved in your history',
+    'improve.savedHelp': 'The current sheet is loaded from your history.',
+    'improve.savedSelected': 'Selected sheet',
+    'improve.savedTitle': 'Saved sheet to improve',
+    'improve.sheetHelp': 'Accepted formats: PDF, DOCX, ODT, TXT.',
+    'improve.sheetInputHelp': 'PDF, DOCX, ODT or TXT. Your sheet structure is preserved.',
+    'improve.sheetInputLabel': 'Existing sheet',
+    'improve.sheetNotFound': 'Sheet not found.',
+    'improve.submit': 'Improve my sheet',
+    'improve.submitting': 'Improving...',
+    'improve.title': 'Improve a sheet',
+    'language.aria': 'Change language',
+    'login.email': 'Email',
+    'login.login': 'Login',
+    'login.password': 'Password',
+    'login.passwordPlaceholder': 'At least 8 characters',
+    'login.register': 'Sign up',
+    'login.registerSubmit': 'Create my account',
+    'login.registerSubtitle': 'Create an account to keep your preparations.',
+    'login.submit': 'Log in',
+    'login.subtitle': 'Log in to find your sheets.',
+    'nav.connected': 'Signed in',
+    'nav.logout': 'Log out',
+    'nav.main': 'Main navigation',
+    'nav.returnHome': 'Back to Prep AI dashboard',
+    'settings.account': 'Account',
+    'settings.description': 'Manage your account and preferences.',
+    'settings.emailHelp': 'This address is used to sign in.',
+    'settings.language': 'Language',
+    'settings.languageDescription': 'Choose the interface language.',
+    'settings.password': 'New password',
+    'settings.passwordHelp': 'Leave blank to keep your current password.',
+    'settings.passwordPlaceholder': 'At least 8 characters',
+    'settings.profile': 'User profile',
+    'settings.save': 'Save',
+    'settings.saved': 'Settings saved.',
+    'settings.saving': 'Saving...',
+    'settings.title': 'Settings',
+    'sheet.anticipated': 'Anticipation',
+    'sheet.anticipations': 'Anticipations / Differentiation',
+    'sheet.copyError': 'Unable to copy the sheet.',
+    'sheet.copySuccess': 'Sheet copied to clipboard.',
+    'sheet.deleteDescription':
+      'This action is permanent. The sheet will no longer be available in your history.',
+    'sheet.deleteSuccess': 'Sheet deleted.',
+    'sheet.deleteTitle': 'Delete this sheet?',
+    'sheet.difficultStudents': 'Students needing support',
+    'sheet.emptyDescription': 'Create your first sheet to find it here.',
+    'sheet.emptyTitle': 'No sheets yet',
+    'sheet.expectedAnswer': 'Expected answer',
+    'sheet.exportError': 'Unable to export the sheet.',
+    'sheet.exportSuccess': 'Excel export generated.',
+    'sheet.fastStudents': 'Fast finishers',
+    'sheet.materials': 'Materials',
+    'sheet.noAnticipation': 'No anticipation specified.',
+    'sheet.notSpecified': 'Not specified',
+    'sheet.objective': 'Objective',
+    'sheet.openError': 'Unable to open.',
+    'sheet.organization': 'Organization',
+    'sheet.phaseDuration': 'Phase / Duration',
+    'sheet.plannedMinutes': '{minutes} planned min',
+    'sheet.previewDescription': 'Preparation sheet preview',
+    'sheet.skills': 'Skills',
+    'sheet.steps': 'Flow / Instructions',
+    'sheet.loadError': 'Unable to load.',
+    'sheet.deleteError': 'Unable to delete.',
+    'theme.dark': 'Enable dark theme',
+    'theme.light': 'Enable light theme',
+    'xlsx.expectedAnswers': 'Expected answers',
+    'xlsx.duration': 'Duration',
+    'xlsx.levelDuration': 'Level / duration',
+    'xlsx.materials': 'Materials',
+    'xlsx.objective': 'Objective',
+    'xlsx.organization': 'Organization',
+    'xlsx.phase': 'Phase',
+    'xlsx.possibleErrorPrefix': 'Possible error: ',
+    'xlsx.relaunchPrefix': 'Follow-up: ',
+    'xlsx.sheetName': 'Sheet',
+    'xlsx.supportPrefix': 'Support: ',
+    'xlsx.teacherWords': "Teacher's words",
+    'xlsx.extensionPrefix': 'Extension: ',
+  },
+} as const
+
+export type TranslationKey = keyof typeof translations.fr
+
+const I18nContext = createContext<I18nContextValue | null>(null)
+
+export function I18nProvider({ children }: { children: React.ReactNode }) {
+  const [locale, setLocaleState] = useState<Locale>(readStoredLocale)
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, locale)
+    document.documentElement.lang = locale
+  }, [locale])
+
+  const value = useMemo<I18nContextValue>(
+    () => ({
+      locale,
+      setLocale: setLocaleState,
+      toggleLocale: () => setLocaleState((current) => (current === 'fr' ? 'en' : 'fr')),
+      t: (key, params) => translate(locale, key, params),
+    }),
+    [locale],
+  )
+
+  return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>
+}
+
+export function useI18n() {
+  const context = useContext(I18nContext)
+  if (!context) {
+    throw new Error('useI18n must be used inside an I18nProvider')
+  }
+  return context
+}
+
+export function translateCurrent(key: TranslationKey, params?: Params) {
+  return translate(readStoredLocale(), key, params)
+}
+
+function translate(locale: Locale, key: TranslationKey, params?: Params) {
+  const template = translations[locale][key] ?? translations[defaultLocale][key] ?? key
+  if (!params) {
+    return template
+  }
+  return template.replace(/\{(\w+)\}/g, (_, name: string) => String(params[name] ?? `{${name}}`))
+}
+
+function readStoredLocale(): Locale {
+  const stored = localStorage.getItem(STORAGE_KEY)
+  return stored === 'en' || stored === 'fr' ? stored : defaultLocale
+}
