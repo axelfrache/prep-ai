@@ -62,6 +62,20 @@ func (r improveRequestDTO) toDomain() domain.ImproveRequest {
 	}
 }
 
+type improveSavedRequestDTO struct {
+	Notes          string        `json:"notes"`
+	Resources      []documentDTO `json:"resources"`
+	GenerationMode string        `json:"generationMode"`
+}
+
+func (r improveSavedRequestDTO) toDomain() domain.ImproveSavedRequest {
+	return domain.ImproveSavedRequest{
+		Notes:          r.Notes,
+		Resources:      toDomainDocuments(r.Resources),
+		GenerationMode: domain.GenerationMode(r.GenerationMode),
+	}
+}
+
 type sheetDTO struct {
 	Title           string     `json:"title"`
 	Subject         string     `json:"subject"`

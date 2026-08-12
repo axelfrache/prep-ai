@@ -5,20 +5,27 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { improveSheet } from '@/lib/api'
+import { improveSavedSheet, improveSheet } from '@/lib/api'
 import {
   DocumentExtractionError,
   extractDocuments,
   extractDocumentText,
 } from '@/lib/documentExtractors'
-import type { SavedSheet } from '@/types/preparation'
+import type { GenerationMode, SavedSheet } from '@/types/preparation'
 
 type ImproveSheetFormProps = {
+  savedSheetId?: string
+  savedSheetTitle?: string
   onResult: (saved: SavedSheet) => void
   onError: (message: string) => void
 }
 
-export function ImproveSheetForm({ onResult, onError }: ImproveSheetFormProps) {
+export function ImproveSheetForm({
+  savedSheetId,
+  savedSheetTitle,
+  onResult,
+  onError,
+}: ImproveSheetFormProps) {
   const [sheetFile, setSheetFile] = useState<File | null>(null)
   const [resourceFiles, setResourceFiles] = useState<FileList | null>(null)
   const [notes, setNotes] = useState('')
@@ -29,20 +36,25 @@ export function ImproveSheetForm({ onResult, onError }: ImproveSheetFormProps) {
     event.preventDefault()
     onError('')
 
-    if (!sheetFile) {
+    if (!savedSheetId && !sheetFile) {
       return onError('Importez votre fiche existante pour l’améliorer.')
     }
 
     try {
       setSubmitting(true)
-      const existingSheet = await extractDocumentText(sheetFile)
       const resources = resourceFiles ? await extractDocuments(resourceFiles) : []
-      const result = await improveSheet({
-        existingSheet,
+      const generationMode: GenerationMode = advancedMode ? 'advanced' : 'fast'
+      const payload = {
         resources,
         notes: notes.trim() || undefined,
-        generationMode: advancedMode ? 'advanced' : 'fast',
-      })
+        generationMode,
+      }
+      const result = savedSheetId
+        ? await improveSavedSheet(savedSheetId, payload)
+        : await improveSheet({
+            ...payload,
+            existingSheet: await extractDocumentText(sheetFile as File),
+          })
       onResult(result)
     } catch (error) {
       onError(readError(error))
@@ -53,19 +65,28 @@ export function ImproveSheetForm({ onResult, onError }: ImproveSheetFormProps) {
 
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
-      <div className="space-y-2">
-        <Label htmlFor="existing-sheet">Fiche existante</Label>
-        <Input
-          id="existing-sheet"
-          type="file"
-          required
-          accept=".pdf,.docx,.odt,.txt,application/pdf,text/plain"
-          onChange={(event) => setSheetFile(event.target.files?.[0] ?? null)}
-        />
-        <p className="text-xs text-muted-foreground">
-          PDF, DOCX, ODT ou TXT. La structure de votre fiche est conservée.
-        </p>
-      </div>
+      {savedSheetId ? (
+        <div className="rounded-lg border bg-primary/5 px-4 py-3">
+          <p className="text-sm font-medium">Fiche sélectionnée</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {savedSheetTitle ?? 'Fiche enregistrée dans votre historique'}
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <Label htmlFor="existing-sheet">Fiche existante</Label>
+          <Input
+            id="existing-sheet"
+            type="file"
+            required
+            accept=".pdf,.docx,.odt,.txt,application/pdf,text/plain"
+            onChange={(event) => setSheetFile(event.target.files?.[0] ?? null)}
+          />
+          <p className="text-xs text-muted-foreground">
+            PDF, DOCX, ODT ou TXT. La structure de votre fiche est conservée.
+          </p>
+        </div>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="improve-resources">Ressources complémentaires</Label>

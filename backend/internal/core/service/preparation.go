@@ -41,6 +41,24 @@ func (p *Preparation) ImproveSheet(ctx context.Context, userID string, req domai
 	return p.sheets.Save(ctx, userID, sheet)
 }
 
+func (p *Preparation) ImproveSavedSheet(ctx context.Context, userID, sheetID string, req domain.ImproveSavedRequest) (domain.SavedSheet, error) {
+	saved, err := p.GetSheet(ctx, userID, sheetID)
+	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+
+	return p.ImproveSheet(ctx, userID, domain.ImproveRequest{
+		ExistingSheet: domain.Document{
+			Name: saved.Sheet.Title + ".txt",
+			Type: "txt",
+			Text: formatSheetForImprovement(saved.Sheet),
+		},
+		Notes:          req.Notes,
+		Resources:      req.Resources,
+		GenerationMode: req.GenerationMode,
+	})
+}
+
 func (p *Preparation) ListSheets(ctx context.Context, userID string) ([]domain.SavedSheet, error) {
 	return p.sheets.ListByUser(ctx, userID)
 }
@@ -54,4 +72,14 @@ func (p *Preparation) GetSheet(ctx context.Context, userID, sheetID string) (dom
 		return domain.SavedSheet{}, err
 	}
 	return sheet, nil
+}
+
+func (p *Preparation) DeleteSheet(ctx context.Context, userID, sheetID string) error {
+	if err := p.sheets.Delete(ctx, userID, sheetID); err != nil {
+		if errors.Is(err, port.ErrNotFound) {
+			return domain.ErrSheetNotFound()
+		}
+		return err
+	}
+	return nil
 }

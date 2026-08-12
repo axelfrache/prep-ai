@@ -50,6 +50,21 @@ func (h *Handler) Improve(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 	writeJSON(w, stdhttp.StatusOK, newSavedSheetDTO(saved))
 }
 
+func (h *Handler) ImproveSavedSheet(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	var dto improveSavedRequestDTO
+	if err := decodeJSON(w, r, &dto); err != nil {
+		writeError(w, err)
+		return
+	}
+
+	saved, err := h.service.ImproveSavedSheet(r.Context(), userIDFromContext(r.Context()), r.PathValue("id"), dto.toDomain())
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, stdhttp.StatusOK, newSavedSheetDTO(saved))
+}
+
 func (h *Handler) ListSheets(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 	saved, err := h.service.ListSheets(r.Context(), userIDFromContext(r.Context()))
 	if err != nil {
@@ -66,6 +81,14 @@ func (h *Handler) GetSheet(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 		return
 	}
 	writeJSON(w, stdhttp.StatusOK, newSavedSheetDTO(saved))
+}
+
+func (h *Handler) DeleteSheet(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	if err := h.service.DeleteSheet(r.Context(), userIDFromContext(r.Context()), r.PathValue("id")); err != nil {
+		writeError(w, err)
+		return
+	}
+	w.WriteHeader(stdhttp.StatusNoContent)
 }
 
 func (h *Handler) Health(w stdhttp.ResponseWriter, _ *stdhttp.Request) {

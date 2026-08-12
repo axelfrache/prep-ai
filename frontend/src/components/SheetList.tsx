@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Eye, FileText, Loader2 } from 'lucide-react'
+import { Eye, FilePenLine, FileText, Loader2, Trash2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { toast } from 'sonner'
 import { SheetPreviewDialog } from '@/components/SheetPreviewDialog'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { getSheet, listSheets } from '@/lib/api'
+import { deleteSheet, getSheet, listSheets } from '@/lib/api'
 import type { PreparationSheet, SheetSummary } from '@/types/preparation'
 
 type SheetListProps = {
@@ -15,6 +17,7 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
   const [items, setItems] = useState<SheetSummary[]>([])
   const [loading, setLoading] = useState(true)
   const [openingId, setOpeningId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<string | null>(null)
   const [preview, setPreview] = useState<PreparationSheet | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
 
@@ -44,6 +47,24 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
       onError(err instanceof Error ? err.message : 'Ouverture impossible.')
     } finally {
       setOpeningId(null)
+    }
+  }
+
+  async function removeSheet(item: SheetSummary) {
+    const confirmed = window.confirm(`Supprimer définitivement "${item.title}" ?`)
+    if (!confirmed) {
+      return
+    }
+
+    setDeletingId(item.id)
+    try {
+      await deleteSheet(item.id)
+      setItems((current) => current.filter((sheet) => sheet.id !== item.id))
+      toast.success('Fiche supprimée.')
+    } catch (err) {
+      onError(err instanceof Error ? err.message : 'Suppression impossible.')
+    } finally {
+      setDeletingId(null)
     }
   }
 
@@ -84,19 +105,41 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
                 {new Date(item.createdAt).toLocaleDateString('fr-FR')}
               </p>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={openingId === item.id}
-              onClick={() => openPreview(item.id)}
-            >
-              {openingId === item.id ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Eye className="size-4" />
-              )}
-              Aperçu
-            </Button>
+            <div className="flex shrink-0 items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={openingId === item.id || deletingId === item.id}
+                onClick={() => openPreview(item.id)}
+              >
+                {openingId === item.id ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Eye className="size-4" />
+                )}
+                Aperçu
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to={`/improve/${item.id}`}>
+                  <FilePenLine className="size-4" />
+                  Éditer
+                </Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                className="text-muted-foreground hover:text-destructive"
+                disabled={deletingId === item.id}
+                onClick={() => removeSheet(item)}
+                aria-label={`Supprimer ${item.title}`}
+              >
+                {deletingId === item.id ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Trash2 className="size-4" />
+                )}
+              </Button>
+            </div>
           </li>
         ))}
       </ul>

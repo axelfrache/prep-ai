@@ -70,6 +70,12 @@ export type ImproveSheetPayload = {
   generationMode?: GenerationMode
 }
 
+export type ImproveSavedSheetPayload = {
+  resources: ExtractedDocument[]
+  notes?: string
+  generationMode?: GenerationMode
+}
+
 export type AuthUser = {
   id: string
   email: string

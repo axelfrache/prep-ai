@@ -73,6 +73,19 @@ func (r *SheetRepository) GetByID(ctx context.Context, userID, sheetID string) (
 	return saved, nil
 }
 
+func (r *SheetRepository) Delete(ctx context.Context, userID, sheetID string) error {
+	const q = `DELETE FROM sheets WHERE id = $1 AND user_id = $2`
+
+	tag, err := r.pool.Exec(ctx, q, sheetID, userID)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return port.ErrNotFound
+	}
+	return nil
+}
+
 type scannable interface {
 	Scan(dest ...any) error
 }

@@ -1,6 +1,7 @@
 import type {
   AuthResponse,
   CreateSheetPayload,
+  ImproveSavedSheetPayload,
   ImproveSheetPayload,
   SavedSheet,
   SheetSummary,
@@ -91,12 +92,23 @@ export function improveSheet(payload: ImproveSheetPayload): Promise<SavedSheet> 
   return request('/api/improve', { method: 'POST', body: JSON.stringify(payload) })
 }
 
+export function improveSavedSheet(
+  id: string,
+  payload: ImproveSavedSheetPayload,
+): Promise<SavedSheet> {
+  return request(`/api/sheets/${id}/improve`, { method: 'POST', body: JSON.stringify(payload) })
+}
+
 export function listSheets(): Promise<SheetSummary[]> {
   return request('/api/sheets')
 }
 
 export function getSheet(id: string): Promise<SavedSheet> {
   return request(`/api/sheets/${id}`)
+}
+
+export function deleteSheet(id: string): Promise<void> {
+  return request(`/api/sheets/${id}`, { method: 'DELETE' })
 }
 
 async function readableError(response: Response): Promise<string> {

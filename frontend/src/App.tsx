@@ -37,6 +37,7 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="create" element={<CreatePage />} />
         <Route path="improve" element={<ImprovePage />} />
+        <Route path="improve/:sheetId" element={<ImprovePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

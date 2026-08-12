@@ -39,6 +39,12 @@ type ImproveRequest struct {
 	GenerationMode GenerationMode
 }
 
+type ImproveSavedRequest struct {
+	Notes          string
+	Resources      []Document
+	GenerationMode GenerationMode
+}
+
 func normalizeType(t string) string {
 	return strings.ToLower(strings.TrimSpace(t))
 }

@@ -140,3 +140,48 @@ func orDefault(value, fallback string) string {
 	}
 	return value
 }
+
+func formatSheetForImprovement(sheet domain.Sheet) string {
+	var b strings.Builder
+	fmt.Fprintf(&b, "Titre : %s\n", sheet.Title)
+	fmt.Fprintf(&b, "Matière : %s\n", sheet.Subject)
+	fmt.Fprintf(&b, "Niveau : %s\n", sheet.Level)
+	fmt.Fprintf(&b, "Durée : %d min\n", sheet.DurationMinutes)
+	fmt.Fprintf(&b, "Objectif : %s\n", sheet.Objective)
+	b.WriteString("Compétences :\n")
+	for _, item := range sheet.Competencies {
+		fmt.Fprintf(&b, "- %s\n", item)
+	}
+	b.WriteString("Matériel :\n")
+	for _, item := range sheet.Materials {
+		fmt.Fprintf(&b, "- %s\n", item)
+	}
+	b.WriteString("\nPhases :\n")
+	for _, phase := range sheet.Phases {
+		fmt.Fprintf(&b, "\n%s (%d min)\n", phase.Name, phase.DurationMinutes)
+		fmt.Fprintf(&b, "Organisation : %s\n", phase.Organization)
+		for _, block := range phase.Blocks {
+			fmt.Fprintf(&b, "- %s : %s\n", blockLabel(block.Type), block.Text)
+		}
+	}
+	return b.String()
+}
+
+func blockLabel(blockType domain.BlockType) string {
+	switch blockType {
+	case domain.BlockTeacherSpeech:
+		return "Parole enseignante"
+	case domain.BlockTeacherRelaunch:
+		return "Relance enseignante"
+	case domain.BlockExpectedAnswer:
+		return "Réponse attendue"
+	case domain.BlockAnticipatedError:
+		return "Erreur anticipée"
+	case domain.BlockSupport:
+		return "Aide élèves en difficulté"
+	case domain.BlockExtension:
+		return "Prolongement élèves rapides"
+	default:
+		return "Consigne"
+	}
+}

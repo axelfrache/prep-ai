@@ -45,6 +45,8 @@ cd frontend && npm install && npm run dev                          # :5173
 | POST    | `/api/improve`        | oui  |
 | GET     | `/api/sheets`         | oui  |
 | GET     | `/api/sheets/{id}`    | oui  |
+| POST    | `/api/sheets/{id}/improve` | oui  |
+| DELETE  | `/api/sheets/{id}`    | oui  |
 | GET     | `/api/health`         | non  |
 
 Auth par JWT : envoyer `Authorization: Bearer <token>`. Mots de passe hachés avec bcrypt.

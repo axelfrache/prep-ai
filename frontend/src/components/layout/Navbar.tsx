@@ -1,4 +1,11 @@
-import { GraduationCap, LogOut } from 'lucide-react'
+import {
+  ChevronDown,
+  FilePenLine,
+  FilePlus2,
+  GraduationCap,
+  LayoutDashboard,
+  LogOut,
+} from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -14,25 +21,32 @@ import { useAuth } from '@/lib/auth'
 import { cn } from '@/lib/utils'
 
 const links = [
-  { to: '/', label: 'Accueil', end: true },
-  { to: '/create', label: 'Créer' },
-  { to: '/improve', label: 'Améliorer' },
+  { to: '/', label: 'Accueil', icon: LayoutDashboard, end: true },
+  { to: '/create', label: 'Créer', icon: FilePlus2 },
+  { to: '/improve', label: 'Améliorer', icon: FilePenLine },
 ]
 
 export function Navbar() {
   const { user, logout } = useAuth()
 
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-6 px-4">
-        <NavLink to="/" className="flex items-center gap-2 font-semibold">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+    <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+      <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:flex-nowrap sm:px-6">
+        <NavLink
+          to="/"
+          className="flex shrink-0 items-center gap-3 rounded-lg pr-2 font-semibold outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          aria-label="Retour au tableau de bord Prep AI"
+        >
+          <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
             <GraduationCap className="size-5" />
           </span>
-          Prep AI
+          <span className="text-lg tracking-tight">Prep AI</span>
         </NavLink>
 
-        <nav className="flex items-center gap-1">
+        <nav
+          className="order-3 flex w-full items-center gap-1 overflow-x-auto sm:order-none sm:w-auto"
+          aria-label="Navigation principale"
+        >
           {links.map((link) => (
             <NavLink
               key={link.to}
@@ -40,30 +54,40 @@ export function Navbar() {
               end={link.end}
               className={({ isActive }) =>
                 cn(
-                  'rounded-md px-3 py-1.5 text-sm font-medium transition-colors',
+                  'inline-flex h-9 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors',
                   isActive
-                    ? 'bg-secondary text-secondary-foreground'
-                    : 'text-muted-foreground hover:bg-secondary/60 hover:text-foreground',
+                    ? 'bg-primary/10 text-primary'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                 )
               }
             >
+              <link.icon className="size-4" />
               {link.label}
             </NavLink>
           ))}
         </nav>
 
-        <div className="ml-auto">
+        <div className="ml-auto shrink-0">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-9 gap-2 px-2">
+              <Button
+                variant="ghost"
+                className="h-10 gap-2 rounded-full px-1.5 pr-2 text-muted-foreground hover:text-foreground"
+              >
                 <Avatar className="size-7">
-                  <AvatarFallback className="text-xs">{initials(user?.email)}</AvatarFallback>
+                  <AvatarFallback className="bg-secondary text-xs font-medium text-secondary-foreground">
+                    {initials(user?.email)}
+                  </AvatarFallback>
                 </Avatar>
-                <span className="hidden max-w-40 truncate text-sm sm:inline">{user?.email}</span>
+                <span className="hidden max-w-44 truncate text-sm md:inline">{user?.email}</span>
+                <ChevronDown className="size-4" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
-              <DropdownMenuLabel className="truncate">{user?.email}</DropdownMenuLabel>
+              <DropdownMenuLabel>
+                <span className="block text-xs font-normal text-muted-foreground">Connecté</span>
+                <span className="block truncate">{user?.email}</span>
+              </DropdownMenuLabel>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={logout} variant="destructive">
                 <LogOut className="size-4" /> Déconnexion
