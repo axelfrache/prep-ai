@@ -4,6 +4,14 @@ import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { SheetPreviewDialog } from '@/components/SheetPreviewDialog'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { deleteSheet, getSheet, listSheets } from '@/lib/api'
 import type { PreparationSheet, SheetSummary } from '@/types/preparation'
@@ -18,6 +26,7 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
   const [loading, setLoading] = useState(true)
   const [openingId, setOpeningId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [pendingDelete, setPendingDelete] = useState<SheetSummary | null>(null)
   const [preview, setPreview] = useState<PreparationSheet | null>(null)
   const [previewOpen, setPreviewOpen] = useState(false)
 
@@ -51,15 +60,11 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
   }
 
   async function removeSheet(item: SheetSummary) {
-    const confirmed = window.confirm(`Supprimer définitivement "${item.title}" ?`)
-    if (!confirmed) {
-      return
-    }
-
     setDeletingId(item.id)
     try {
       await deleteSheet(item.id)
       setItems((current) => current.filter((sheet) => sheet.id !== item.id))
+      setPendingDelete(null)
       toast.success('Fiche supprimée.')
     } catch (err) {
       onError(err instanceof Error ? err.message : 'Suppression impossible.')
@@ -130,7 +135,7 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
                 size="icon-sm"
                 className="text-muted-foreground hover:text-destructive"
                 disabled={deletingId === item.id}
-                onClick={() => removeSheet(item)}
+                onClick={() => setPendingDelete(item)}
                 aria-label={`Supprimer ${item.title}`}
               >
                 {deletingId === item.id ? (
@@ -147,6 +152,62 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
       {preview ? (
         <SheetPreviewDialog sheet={preview} open={previewOpen} onOpenChange={setPreviewOpen} />
       ) : null}
+
+      <Dialog
+        open={Boolean(pendingDelete)}
+        onOpenChange={(open) => {
+          if (!open && !deletingId) {
+            setPendingDelete(null)
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Supprimer cette fiche ?</DialogTitle>
+            <DialogDescription>
+              Cette action est définitive. La fiche ne sera plus disponible dans votre historique.
+            </DialogDescription>
+          </DialogHeader>
+
+          {pendingDelete ? (
+            <div className="rounded-lg border bg-muted/40 px-3 py-2">
+              <p className="truncate text-sm font-medium">{pendingDelete.title}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {pendingDelete.subject} · {pendingDelete.level} · {pendingDelete.durationMinutes}{' '}
+                min
+              </p>
+            </div>
+          ) : null}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={Boolean(deletingId)}
+              onClick={() => setPendingDelete(null)}
+            >
+              Annuler
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={!pendingDelete || Boolean(deletingId)}
+              onClick={() => {
+                if (pendingDelete) {
+                  void removeSheet(pendingDelete)
+                }
+              }}
+            >
+              {deletingId ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Trash2 className="size-4" />
+              )}
+              Supprimer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
