@@ -1,5 +1,7 @@
 import { Sparkles } from 'lucide-react'
+import { Card } from '@/components/ui/card'
 import { Label } from '@/components/ui/label'
+import { ShineBorder } from '@/components/ui/shine-border'
 import { Switch } from '@/components/ui/switch'
 import { useI18n } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
@@ -18,14 +20,15 @@ export function AdvancedModeToggle({
   const { t } = useI18n()
 
   return (
-    <div
+    <Card
       className={cn(
-        'flex items-start justify-between gap-4 rounded-lg border bg-muted/30 px-4 py-3 transition-colors',
-        checked && 'border-primary/40 bg-primary/5',
+        'relative flex-row items-start justify-between gap-4 overflow-hidden rounded-lg border-transparent bg-muted/30 px-4 py-3 shadow-none transition-colors',
+        checked && 'bg-primary/5',
         className,
       )}
     >
-      <div className="flex min-w-0 items-start gap-3">
+      <ShineBorder shineColor={['#A07CFE', '#FE8FB5', '#FFBE7B']} />
+      <div className="relative z-10 flex min-w-0 items-start gap-3">
         <span
           className={cn(
             'mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground',
@@ -48,8 +51,8 @@ export function AdvancedModeToggle({
         checked={checked}
         onCheckedChange={onCheckedChange}
         aria-label={t('advanced.aria')}
-        className="mt-1"
+        className="relative z-10 mt-1"
       />
-    </div>
+    </Card>
   )
 }

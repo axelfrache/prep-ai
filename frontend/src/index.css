@@ -3,6 +3,12 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@property --shine-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
 :root {
   color-scheme: light;
   --radius: 0.65rem;
@@ -71,6 +77,12 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --animate-shine: shine var(--duration) infinite linear;
+  @keyframes shine {
+    to {
+      --shine-angle: 360deg;
+    }
+  }
 }
 
 @layer base {
