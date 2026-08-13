@@ -1,12 +1,4 @@
-import {
-  ChevronDown,
-  FilePenLine,
-  FilePlus2,
-  GraduationCap,
-  LayoutDashboard,
-  LogOut,
-  Settings,
-} from 'lucide-react'
+import { ChevronDown, GraduationCap, LayoutDashboard, LogOut, Settings } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -23,17 +15,17 @@ import { useAuth } from '@/lib/auth'
 import { useI18n, type TranslationKey } from '@/lib/i18n'
 import { cn } from '@/lib/utils'
 
-const links = [
-  { to: '/', labelKey: 'global.home', icon: LayoutDashboard, end: true },
-  { to: '/create', labelKey: 'create.title', icon: FilePlus2 },
-  { to: '/improve', labelKey: 'improve.title', icon: FilePenLine },
-  { to: '/settings', labelKey: 'settings.title', icon: Settings },
-] satisfies Array<{
+type NavItem = {
   to: string
   labelKey: TranslationKey
   icon: React.ComponentType<{ className?: string }>
   end?: boolean
-}>
+}
+
+const navItems: NavItem[] = [
+  { to: '/', labelKey: 'global.home', icon: LayoutDashboard, end: true },
+  { to: '/settings', labelKey: 'nav.settings', icon: Settings },
+]
 
 export function Navbar() {
   const { user, logout } = useAuth()
@@ -41,10 +33,10 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center gap-x-4 gap-y-2 px-4 py-2 sm:flex-nowrap sm:px-6">
+      <div className="mx-auto flex min-h-16 max-w-7xl flex-wrap items-center gap-x-3 gap-y-2 px-4 py-2 sm:px-6 lg:flex-nowrap">
         <NavLink
           to="/"
-          className="flex shrink-0 items-center gap-3 rounded-lg pr-2 font-semibold outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="flex shrink-0 items-center gap-3 rounded-lg pr-1 font-semibold outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={t('nav.returnHome')}
         >
           <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -54,25 +46,25 @@ export function Navbar() {
         </NavLink>
 
         <nav
-          className="order-3 flex w-full items-center gap-1 overflow-x-auto sm:order-none sm:w-auto"
+          className="order-3 flex w-full gap-1 rounded-xl bg-secondary/70 p-1 sm:order-none sm:mx-2 sm:w-auto sm:bg-transparent sm:p-0"
           aria-label={t('nav.main')}
         >
-          {links.map((link) => (
+          {navItems.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               end={link.end}
               className={({ isActive }) =>
                 cn(
-                  'inline-flex h-9 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors',
+                  'inline-flex h-9 min-w-0 items-center justify-center gap-2 rounded-lg px-3 text-sm font-medium transition-colors sm:justify-start',
                   isActive
-                    ? 'bg-primary/10 text-primary'
-                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
+                    ? 'bg-background text-foreground shadow-xs sm:bg-primary/10 sm:text-primary sm:shadow-none'
+                    : 'text-muted-foreground hover:bg-background/70 hover:text-foreground sm:hover:bg-secondary',
                 )
               }
             >
               <link.icon className="size-4" />
-              {t(link.labelKey)}
+              <span className="truncate">{t(link.labelKey)}</span>
             </NavLink>
           ))}
         </nav>
@@ -91,7 +83,7 @@ export function Navbar() {
                     {initials(user?.email)}
                   </AvatarFallback>
                 </Avatar>
-                <span className="hidden max-w-44 truncate text-sm md:inline">{user?.email}</span>
+                <span className="hidden max-w-36 truncate text-sm xl:inline">{user?.email}</span>
                 <ChevronDown className="size-4" />
               </Button>
             </DropdownMenuTrigger>
