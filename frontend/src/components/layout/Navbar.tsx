@@ -1,4 +1,4 @@
-import { ChevronDown, GraduationCap, LayoutDashboard, LogOut, Settings } from 'lucide-react'
+import { ChevronDown, LayoutDashboard, LogOut, Settings } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -39,8 +39,8 @@ export function Navbar() {
           className="flex shrink-0 items-center gap-3 rounded-lg pr-1 font-semibold outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           aria-label={t('nav.returnHome')}
         >
-          <span className="flex size-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <GraduationCap className="size-5" />
+          <span className="flex size-10 items-center justify-center overflow-hidden rounded-xl bg-primary/10">
+            <img src="/icon.png" alt="" className="size-8 object-contain" draggable={false} />
           </span>
           <span className="text-lg tracking-tight">Prep AI</span>
         </NavLink>
