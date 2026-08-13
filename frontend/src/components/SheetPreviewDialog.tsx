@@ -13,6 +13,8 @@ import {
 } from '@/components/ui/dialog'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useI18n } from '@/lib/i18n'
+import { exportSheetToDocx } from '@/lib/documentExport'
+import { exportSheetToOdt } from '@/lib/odtExport'
 import { exportSheetToXlsx } from '@/lib/xlsxExport'
 import type { PreparationSheet } from '@/types/preparation'
 
@@ -53,6 +55,24 @@ export function SheetPreviewDialog({
     }
   }
 
+  async function exportDocx() {
+    try {
+      await exportSheetToDocx(sheet)
+      toast.success(t('sheet.exportDocumentSuccess'))
+    } catch {
+      toast.error(t('sheet.exportError'))
+    }
+  }
+
+  async function exportOdt() {
+    try {
+      await exportSheetToOdt(sheet)
+      toast.success(t('sheet.exportDocumentSuccess'))
+    } catch {
+      toast.error(t('sheet.exportError'))
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={setOpen}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
@@ -66,8 +86,14 @@ export function SheetPreviewDialog({
             <Button variant="outline" size="sm" onClick={copy}>
               <Copy className="size-4" /> {t('action.copy')}
             </Button>
+            <Button variant="outline" size="sm" onClick={exportDocx}>
+              <Download className="size-4" /> {t('action.exportWord')}
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportOdt}>
+              <Download className="size-4" /> {t('action.exportOdt')}
+            </Button>
             <Button variant="outline" size="sm" onClick={exportXlsx}>
-              <Download className="size-4" /> Excel
+              <Download className="size-4" /> {t('action.exportExcel')}
             </Button>
           </div>
         </DialogHeader>

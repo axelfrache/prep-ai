@@ -1,5 +1,13 @@
 import JSZip from 'jszip'
 import { translateCurrent } from '@/lib/i18n'
+import {
+  downloadBlob,
+  escapeXml,
+  groupPhaseBlocks,
+  sheetFilename,
+  sheetList,
+  xmlHeader,
+} from '@/lib/exportUtils'
 import type { PreparationBlock, PreparationSheet } from '@/types/preparation'
 
 type CellValue = string | number
@@ -28,7 +36,7 @@ export async function exportSheetToXlsx(sheet: PreparationSheet): Promise<void> 
     type: 'blob',
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   })
-  downloadBlob(blob, `${slugify(sheet.title || 'preparation-sheet')}.xlsx`)
+  downloadBlob(blob, sheetFilename(sheet, 'xlsx'))
 }
 
 function worksheetXml(sheet: PreparationSheet): string {
@@ -85,11 +93,11 @@ function sheetToRows(sheet: PreparationSheet): StyledCell[][] {
     ],
     [
       { value: translateCurrent('sheet.skills'), style: styles.label },
-      { value: listText(sheet.competencies), style: styles.wrap },
+      { value: sheetList(sheet.competencies), style: styles.wrap },
     ],
     [
       { value: translateCurrent('xlsx.materials'), style: styles.label },
-      { value: listText(sheet.materials), style: styles.wrap },
+      { value: sheetList(sheet.materials), style: styles.wrap },
     ],
     [
       { value: translateCurrent('xlsx.phase'), style: styles.header },
@@ -100,21 +108,18 @@ function sheetToRows(sheet: PreparationSheet): StyledCell[][] {
       { value: translateCurrent('xlsx.expectedAnswers'), style: styles.header },
       { value: translateCurrent('sheet.anticipations'), style: styles.header },
     ],
-    ...sheet.phases.map((phase) => [
-      { value: phase.name, style: styles.wrap },
-      { value: `${phase.durationMinutes} min`, style: styles.wrap },
-      { value: phase.organization, style: styles.wrap },
-      { value: numberedBlocks(phase.blocks, ['instruction']), style: styles.wrap },
-      {
-        value: numberedBlocks(phase.blocks, ['teacher_speech', 'teacher_relaunch']),
-        style: styles.wrap,
-      },
-      { value: numberedBlocks(phase.blocks, ['expected_answer']), style: styles.wrap },
-      {
-        value: numberedBlocks(phase.blocks, ['anticipated_error', 'support', 'extension']),
-        style: styles.wrap,
-      },
-    ]),
+    ...sheet.phases.map((phase) => {
+      const blocks = groupPhaseBlocks(phase.blocks)
+      return [
+        { value: phase.name, style: styles.wrap },
+        { value: `${phase.durationMinutes} min`, style: styles.wrap },
+        { value: phase.organization, style: styles.wrap },
+        { value: blocks.instructions, style: styles.wrap },
+        { value: blocks.teacherWords, style: styles.wrap },
+        { value: blocks.expectedAnswers, style: styles.wrap },
+        { value: blocks.anticipations, style: styles.wrap },
+      ]
+    }),
   ]
 }
 
@@ -141,35 +146,6 @@ function cellXml(cell: StyledCell, column: string, row: number): string {
     return `<c r="${column}${row}" s="${style}"><v>${cell.value}</v></c>`
   }
   return `<c r="${column}${row}" t="inlineStr" s="${style}"><is><t xml:space="preserve">${escapeXml(cell.value)}</t></is></c>`
-}
-
-function numberedBlocks(blocks: PreparationBlock[], types: PreparationBlock['type'][]): string {
-  const selected = blocks.filter((block) => types.includes(block.type))
-  if (selected.length === 0) {
-    return ''
-  }
-  return selected.map((block, index) => `${index + 1}. ${prefix(block)}${block.text}`).join('\n')
-}
-
-function prefix(block: PreparationBlock): string {
-  switch (block.type) {
-    case 'teacher_relaunch':
-      return translateCurrent('xlsx.relaunchPrefix')
-    case 'anticipated_error':
-      return translateCurrent('xlsx.possibleErrorPrefix')
-    case 'support':
-      return translateCurrent('xlsx.supportPrefix')
-    case 'extension':
-      return translateCurrent('xlsx.extensionPrefix')
-    default:
-      return ''
-  }
-}
-
-function listText(items: string[]): string {
-  return items.length > 0
-    ? items.map((item) => `- ${item}`).join('\n')
-    : translateCurrent('sheet.notSpecified')
 }
 
 function columnName(index: number): string {
@@ -266,38 +242,4 @@ function stylesXml(): string {
       </cellXfs>
     </styleSheet>`,
   )
-}
-
-function xmlHeader(xml: string): string {
-  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>${xml}`
-}
-
-function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;')
-}
-
-function slugify(value: string): string {
-  const slug = value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-  return slug || 'preparation-sheet'
-}
-
-function downloadBlob(blob: Blob, filename: string): void {
-  const url = URL.createObjectURL(blob)
-  const link = document.createElement('a')
-  link.href = url
-  link.download = filename
-  document.body.append(link)
-  link.click()
-  link.remove()
-  URL.revokeObjectURL(url)
 }
