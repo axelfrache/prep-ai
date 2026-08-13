@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Copy, Download } from 'lucide-react'
+import { ChevronDown, Copy, Download, FileSpreadsheet, FileText } from 'lucide-react'
 import { toast } from 'sonner'
 import { SheetView, sheetToText } from '@/components/SheetView'
 import { Button } from '@/components/ui/button'
@@ -11,10 +11,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useI18n } from '@/lib/i18n'
 import { exportSheetToDocx } from '@/lib/documentExport'
 import { exportSheetToOdt } from '@/lib/odtExport'
+import { exportSheetToTxt } from '@/lib/textExport'
 import { exportSheetToXlsx } from '@/lib/xlsxExport'
 import type { PreparationSheet } from '@/types/preparation'
 
@@ -73,6 +80,15 @@ export function SheetPreviewDialog({
     }
   }
 
+  function exportTxt() {
+    try {
+      exportSheetToTxt(sheet, sheetToText(sheet, t))
+      toast.success(t('sheet.exportTextSuccess'))
+    } catch {
+      toast.error(t('sheet.exportError'))
+    }
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={setOpen}>
       {trigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
@@ -86,15 +102,33 @@ export function SheetPreviewDialog({
             <Button variant="outline" size="sm" onClick={copy}>
               <Copy className="size-4" /> {t('action.copy')}
             </Button>
-            <Button variant="outline" size="sm" onClick={exportDocx}>
-              <Download className="size-4" /> {t('action.exportWord')}
-            </Button>
-            <Button variant="outline" size="sm" onClick={exportOdt}>
-              <Download className="size-4" /> {t('action.exportOdt')}
-            </Button>
-            <Button variant="outline" size="sm" onClick={exportXlsx}>
-              <Download className="size-4" /> {t('action.exportExcel')}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Download className="size-4" />
+                  {t('action.export')}
+                  <ChevronDown className="size-4 opacity-70" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-44">
+                <DropdownMenuItem onSelect={() => void exportDocx()}>
+                  <FileText className="size-4" />
+                  {t('action.exportWord')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => void exportOdt()}>
+                  <FileText className="size-4" />
+                  {t('action.exportOdt')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => void exportXlsx()}>
+                  <FileSpreadsheet className="size-4" />
+                  {t('action.exportExcel')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={exportTxt}>
+                  <FileText className="size-4" />
+                  {t('action.exportTxt')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </DialogHeader>
         <ScrollArea className="min-h-0 flex-1">
