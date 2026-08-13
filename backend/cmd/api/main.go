@@ -54,7 +54,7 @@ func main() {
 	server := httpadapter.NewServer(cfg.Addr(), router)
 
 	go func() {
-		log.Printf("Prep AI API listening on %s", cfg.Addr())
+		log.Printf("PrepAI API listening on %s", cfg.Addr())
 		if err := server.ListenAndServe(); err != nil && !errors.Is(err, stdhttp.ErrServerClosed) {
 			log.Fatalf("server error: %v", err)
 		}

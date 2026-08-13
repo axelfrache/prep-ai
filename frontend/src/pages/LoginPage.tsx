@@ -44,7 +44,7 @@ export function LoginPage() {
             <GraduationCap className="size-7" />
           </div>
           <div className="space-y-1.5">
-            <h1 className="text-2xl font-semibold tracking-tight">Prep AI</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">PrepAI</h1>
             <p className="text-sm leading-6 text-muted-foreground">
               {mode === 'login' ? t('login.subtitle') : t('login.registerSubtitle')}
             </p>

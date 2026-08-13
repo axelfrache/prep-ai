@@ -42,7 +42,7 @@ export function Navbar() {
           <span className="flex size-10 items-center justify-center overflow-hidden rounded-xl bg-primary/10">
             <img src="/icon.png" alt="" className="size-8 object-contain" draggable={false} />
           </span>
-          <span className="text-lg tracking-tight">Prep AI</span>
+          <span className="text-lg tracking-tight">PrepAI</span>
         </NavLink>
 
         <nav

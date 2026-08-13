@@ -1,4 +1,4 @@
-# Prep AI
+# PrepAI
 
 Assistant de préparation pédagogique pour le Cycle 2 / CE2 : **créer** une fiche de séance ou **améliorer** une fiche existante. L'extraction des documents (PDF, DOCX, ODT, TXT) se fait dans le navigateur ; le backend ajoute les prompts métier et appelle Gemini. Chaque utilisateur a un compte et retrouve l'historique de ses fiches.
 
