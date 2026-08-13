@@ -1,56 +1,121 @@
 # PrepAI
 
-Assistant de préparation pédagogique pour le Cycle 2 / CE2 : **créer** une fiche de séance ou **améliorer** une fiche existante. L'extraction des documents (PDF, DOCX, ODT, TXT) se fait dans le navigateur ; le backend ajoute les prompts métier et appelle Gemini. Chaque utilisateur a un compte et retrouve l'historique de ses fiches.
+[![CI](https://github.com/axelfrache/prep-ai/actions/workflows/ci.yml/badge.svg)](https://github.com/axelfrache/prep-ai/actions/workflows/ci.yml)
+[![Go](https://img.shields.io/badge/Go-1.26-00ADD8?logo=go&logoColor=white)](https://go.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6.x-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-Par défaut, la génération utilise Gemini 3.5 Flash-Lite (`gemini-3.5-flash-lite`). Si ce modèle répond 429, le backend réessaie avec Gemini 3.1 Flash-Lite (`gemini-3.1-flash-lite`). L'option **Raisonnement avancé** dans l'interface bascule ponctuellement sur Gemini 3.6 Flash (`gemini-3.6-flash`) pour de meilleurs résultats, avec des quotas plus limités.
+## Description
 
-## Structure
+PrepAI is a lesson-preparation assistant for teachers.
 
+It helps users create a complete preparation sheet from a few inputs, improve an existing sheet while preserving its structure, and keep a history of generated sheets.
+
+Documents are extracted in the browser (PDF, DOCX, ODT, TXT). The backend enriches requests with pedagogical prompts and calls Gemini.
+
+### Core Principles
+
+- **Fast preparation**: generate usable lesson sheets with minimal input.
+- **Teacher-ready output**: concrete phases, spoken instructions, expected answers and differentiation.
+- **Quota-aware generation**: fast Gemini model by default, advanced mode when needed.
+- **Simple ownership**: authenticated users keep and manage their own sheets.
+
+## Architecture
+
+| Component | Role | Port |
+| --- | --- | --- |
+| `frontend` | React/Vite UI, document extraction, XLSX export | 80 / 5173 |
+| `backend` | Go API, auth, prompts, Gemini integration | 8080 |
+| `postgres` | Users and saved preparation sheets | 5432 |
+
+The backend follows a small hexagonal structure:
+
+```text
+backend/internal/core      domain, ports, services
+backend/internal/adapter   HTTP, Gemini, PostgreSQL, security
+frontend/src               React application
 ```
-backend/    API Go — architecture hexagonale (ports & adapters)
-frontend/   SPA React + TypeScript + Vite + Tailwind + shadcn/ui
-docker-compose.yml   backend + frontend (nginx) + Postgres
-```
 
-## Démarrage (Docker)
+## Getting Started
+
+### Prerequisites
+
+- Docker & Docker Compose
+- Gemini API key
+- Node.js 22 (frontend development only)
+- Go 1.26 (backend development only)
+
+## Running
+
+### Fully dockerized
 
 ```bash
-cp .env.example .env   # renseigner GEMINI_API_KEY et JWT_SECRET
+cp .env.example .env
+# fill GEMINI_API_KEY and JWT_SECRET
 docker compose up --build
 ```
 
-App sur http://localhost:8080. Le schéma Postgres est créé automatiquement au démarrage.
+Then open:
 
-## Développement
+- App: http://localhost:8080
+- Health check: http://localhost:8080/api/health
+
+To stop:
 
 ```bash
-# Postgres (dev)
-docker run -d --name prepai-db -e POSTGRES_USER=prepai -e POSTGRES_PASSWORD=prepai \
-  -e POSTGRES_DB=prepai -p 5432:5432 postgres:16-alpine
-
-# Backend
-cd backend && GEMINI_API_KEY=... JWT_SECRET=dev go run ./cmd/api   # :8080
-
-# Frontend
-cd frontend && npm install && npm run dev                          # :5173
+docker compose down
 ```
 
-## API
+Use `-v` to also remove the database volume.
 
-| Méthode | Route                 | Auth |
-| ------- | --------------------- | ---- |
-| POST    | `/api/auth/register`  | non  |
-| POST    | `/api/auth/login`     | non  |
-| POST    | `/api/create`         | oui  |
-| POST    | `/api/improve`        | oui  |
-| GET     | `/api/sheets`         | oui  |
-| GET     | `/api/sheets/{id}`    | oui  |
-| POST    | `/api/sheets/{id}/improve` | oui  |
-| DELETE  | `/api/sheets/{id}`    | oui  |
-| GET     | `/api/health`         | non  |
+### Backend only
 
-Auth par JWT : envoyer `Authorization: Bearer <token>`. Mots de passe hachés avec bcrypt.
+```bash
+cd backend
+GEMINI_API_KEY=... JWT_SECRET=dev DATABASE_URL=postgres://prepai:prepai@localhost:5432/prepai?sslmode=disable go run ./cmd/api
+```
 
-## Variables d'environnement
+### Frontend only
 
-`PORT`, `GEMINI_API_KEY`, `GEMINI_DEFAULT_MODEL`, `GEMINI_ADVANCED_MODEL`, `GEMINI_FALLBACK_MODEL`, `DATABASE_URL`, `JWT_SECRET`, `JWT_TTL`, `ALLOWED_ORIGINS`.
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+→ http://localhost:5173
+
+## Gemini Models
+
+| Mode | Model |
+| --- | --- |
+| Default | `gemini-3.5-flash-lite` |
+| Fallback on 429 | `gemini-3.1-flash-lite` |
+| Advanced reasoning | `gemini-3.6-flash` |
+
+The model names can be overridden with `GEMINI_DEFAULT_MODEL`, `GEMINI_FALLBACK_MODEL` and `GEMINI_ADVANCED_MODEL`.
+
+## Code Quality
+
+CI runs checks for both backend and frontend on every push and pull request.
+
+### Backend
+
+```bash
+cd backend
+gofmt -w .
+go vet ./...
+go test ./...
+```
+
+### Frontend
+
+```bash
+cd frontend
+npm run format:check
+npm run lint
+npm run test
+npm run build
+```
