@@ -17,12 +17,12 @@ export function GenerationResult({ sheet }: { sheet: PreparationSheet }) {
 
   return (
     <Card className="border-primary/40 bg-primary/5">
-      <CardContent className="flex flex-col gap-4 pt-6 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-start gap-3">
-          <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-primary" />
+      <CardContent className="flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex min-w-0 items-center gap-3">
+          <CheckCircle2 className="size-5 shrink-0 text-primary" />
           <div>
             <p className="font-medium">{t('generation.saved')}</p>
-            <p className="text-sm text-muted-foreground">{sheet.title}</p>
+            <p className="truncate text-sm text-muted-foreground">{sheet.title}</p>
           </div>
         </div>
         <div className="flex gap-2">

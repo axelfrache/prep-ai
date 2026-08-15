@@ -115,29 +115,27 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="resources">{t('create.resources')}</Label>
-        <Input
-          id="resources"
-          type="file"
-          multiple
-          accept=".pdf,.docx,.odt,.txt,application/pdf,text/plain"
-          onChange={(event) => setFiles(event.target.files)}
-        />
-        <p className="text-xs text-muted-foreground">{t('create.resourcesHelp')}</p>
-      </div>
-
-      <AvailableMaterialsField
-        id="create-available-materials"
-        value={availableMaterials}
-        onChange={setAvailableMaterials}
-      />
-
-      <ClassAdaptationToggle checked={adaptToClass} onCheckedChange={setAdaptToClass} />
-
       <details className="rounded-lg border bg-muted/30 px-4 py-3 text-sm">
-        <summary className="cursor-pointer font-medium">{t('create.details')}</summary>
-        <div className="mt-4 space-y-4">
+        <summary className="cursor-pointer font-medium">{t('create.options')}</summary>
+        <div className="mt-4 space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="resources">{t('create.resources')}</Label>
+            <Input
+              id="resources"
+              type="file"
+              multiple
+              accept=".pdf,.docx,.odt,.txt,application/pdf,text/plain"
+              onChange={(event) => setFiles(event.target.files)}
+            />
+            <p className="text-xs text-muted-foreground">{t('create.resourcesHelp')}</p>
+          </div>
+
+          <AvailableMaterialsField
+            id="create-available-materials"
+            value={availableMaterials}
+            onChange={setAvailableMaterials}
+          />
+
           <div className="space-y-2">
             <Label htmlFor="create-notes">{t('create.notes')}</Label>
             <Textarea
@@ -159,6 +157,8 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
           </div>
         </div>
       </details>
+
+      <ClassAdaptationToggle checked={adaptToClass} onCheckedChange={setAdaptToClass} />
 
       <AdvancedModeToggle checked={advancedMode} onCheckedChange={setAdvancedMode} />
 

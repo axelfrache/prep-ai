@@ -16,7 +16,6 @@ const suggestionKeys: TranslationKey[] = [
   'materials.suggestionNotebook',
   'materials.suggestionTextbook',
   'materials.suggestionPhotocopies',
-  'materials.suggestionManipulatives',
 ]
 
 export function AvailableMaterialsField({ id, value, onChange }: AvailableMaterialsFieldProps) {

@@ -116,35 +116,40 @@ export function ImproveSheetForm({
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="improve-resources">{t('improve.resources')}</Label>
-        <Input
-          id="improve-resources"
-          type="file"
-          multiple
-          accept=".pdf,.docx,.odt,.txt,application/pdf,text/plain"
-          onChange={(event) => setResourceFiles(event.target.files)}
-        />
-      </div>
+      <details className="rounded-lg border bg-muted/30 px-4 py-3 text-sm">
+        <summary className="cursor-pointer font-medium">{t('improve.options')}</summary>
+        <div className="mt-4 space-y-5">
+          <div className="space-y-2">
+            <Label htmlFor="improve-resources">{t('improve.resources')}</Label>
+            <Input
+              id="improve-resources"
+              type="file"
+              multiple
+              accept=".pdf,.docx,.odt,.txt,application/pdf,text/plain"
+              onChange={(event) => setResourceFiles(event.target.files)}
+            />
+          </div>
 
-      <AvailableMaterialsField
-        id="improve-available-materials"
-        value={availableMaterials}
-        onChange={setAvailableMaterials}
-      />
+          <AvailableMaterialsField
+            id="improve-available-materials"
+            value={availableMaterials}
+            onChange={setAvailableMaterials}
+          />
+
+          <div className="space-y-2">
+            <Label htmlFor="improve-notes">{t('improve.notes')}</Label>
+            <Textarea
+              id="improve-notes"
+              rows={3}
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              placeholder={t('improve.notesPlaceholder')}
+            />
+          </div>
+        </div>
+      </details>
 
       <ClassAdaptationToggle checked={adaptToClass} onCheckedChange={setAdaptToClass} />
-
-      <div className="space-y-2">
-        <Label htmlFor="improve-notes">{t('improve.notes')}</Label>
-        <Textarea
-          id="improve-notes"
-          rows={3}
-          value={notes}
-          onChange={(event) => setNotes(event.target.value)}
-          placeholder={t('improve.notesPlaceholder')}
-        />
-      </div>
 
       <AdvancedModeToggle checked={advancedMode} onCheckedChange={setAdvancedMode} />
 

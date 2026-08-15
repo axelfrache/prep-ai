@@ -106,6 +106,7 @@ const translations = {
     'create.levelError': 'Le niveau est obligatoire.',
     'create.notes': 'Remarques ou contraintes',
     'create.notesPlaceholder': 'Ex. séance de découverte, manuel à utiliser, point à éviter...',
+    'create.options': 'Options : ressources, matériel, précisions',
     'create.period': 'Période',
     'create.resources': 'Ressources',
     'create.resourcesHelp': 'PDF, DOCX, ODT ou TXT. Le texte est extrait dans votre navigateur.',
@@ -157,6 +158,7 @@ const translations = {
     'improve.loadingSheet': 'Chargement de la fiche...',
     'improve.notes': 'Remarques',
     'improve.notesPlaceholder': 'Ex. clarifier l’objectif, ajouter de la différenciation...',
+    'improve.options': 'Options : ressources, matériel, précisions',
     'improve.resources': 'Ressources complémentaires',
     'improve.savedDescription':
       'PrepAI repart de cette fiche enregistrée et génère une version améliorée.',
@@ -351,6 +353,7 @@ const translations = {
     'create.levelError': 'Level is required.',
     'create.notes': 'Notes or constraints',
     'create.notesPlaceholder': 'E.g. discovery lesson, textbook to use, point to avoid...',
+    'create.options': 'Options: resources, equipment, details',
     'create.period': 'Period',
     'create.resources': 'Resources',
     'create.resourcesHelp': 'PDF, DOCX, ODT or TXT. Text is extracted in your browser.',
@@ -400,6 +403,7 @@ const translations = {
     'improve.loadingSheet': 'Loading sheet...',
     'improve.notes': 'Notes',
     'improve.notesPlaceholder': 'E.g. clarify the objective, add differentiation...',
+    'improve.options': 'Options: resources, equipment, details',
     'improve.resources': 'Additional resources',
     'improve.savedDescription':
       'PrepAI starts from this saved sheet and generates an improved version.',
