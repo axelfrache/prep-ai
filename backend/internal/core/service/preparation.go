@@ -94,6 +94,23 @@ func (p *Preparation) GetSheet(ctx context.Context, userID, sheetID string) (dom
 	return sheet, nil
 }
 
+func (p *Preparation) UpdateSheet(ctx context.Context, userID, sheetID string, sheet domain.Sheet) (domain.SavedSheet, error) {
+	if !sheet.Valid() {
+		return domain.SavedSheet{}, &domain.AppError{
+			Kind:    domain.KindInvalid,
+			Message: "The submitted sheet is invalid.",
+		}
+	}
+	updated, err := p.sheets.Update(ctx, userID, sheetID, sheet)
+	if err != nil {
+		if errors.Is(err, port.ErrNotFound) {
+			return domain.SavedSheet{}, domain.ErrSheetNotFound()
+		}
+		return domain.SavedSheet{}, err
+	}
+	return updated, nil
+}
+
 func (p *Preparation) DeleteSheet(ctx context.Context, userID, sheetID string) error {
 	if err := p.sheets.Delete(ctx, userID, sheetID); err != nil {
 		if errors.Is(err, port.ErrNotFound) {

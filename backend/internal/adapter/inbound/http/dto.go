@@ -107,6 +107,40 @@ type blockDTO struct {
 	Text string `json:"text"`
 }
 
+func (s sheetDTO) toDomain() domain.Sheet {
+	phases := make([]domain.Phase, len(s.Phases))
+	for i, phase := range s.Phases {
+		phases[i] = phase.toDomain()
+	}
+	return domain.Sheet{
+		Title:           s.Title,
+		Subject:         s.Subject,
+		Level:           s.Level,
+		DurationMinutes: s.DurationMinutes,
+		Competencies:    s.Competencies,
+		Objective:       s.Objective,
+		Materials:       s.Materials,
+		Phases:          phases,
+	}
+}
+
+func (p phaseDTO) toDomain() domain.Phase {
+	blocks := make([]domain.Block, len(p.Blocks))
+	for i, block := range p.Blocks {
+		blocks[i] = block.toDomain()
+	}
+	return domain.Phase{
+		Name:            p.Name,
+		DurationMinutes: p.DurationMinutes,
+		Organization:    p.Organization,
+		Blocks:          blocks,
+	}
+}
+
+func (b blockDTO) toDomain() domain.Block {
+	return domain.Block{Type: domain.BlockType(b.Type), Text: b.Text}
+}
+
 func newSheetDTO(sheet domain.Sheet) sheetDTO {
 	phases := make([]phaseDTO, len(sheet.Phases))
 	for i, p := range sheet.Phases {

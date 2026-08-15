@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Eye, FilePenLine, FileText, Loader2, Trash2 } from 'lucide-react'
+import { Eye, FilePenLine, FileText, Loader2, Sparkles, Trash2 } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { toast } from 'sonner'
 import { SheetPreviewDialog } from '@/components/SheetPreviewDialog'
@@ -101,7 +101,7 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
         {items.map((item) => (
           <li
             key={item.id}
-            className="flex items-center justify-between gap-3 rounded-lg border bg-card px-4 py-3 transition-colors hover:bg-accent/40"
+            className="flex flex-col gap-3 rounded-lg border bg-card px-4 py-3 transition-colors hover:bg-accent/40 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="min-w-0">
               <p className="truncate text-sm font-medium">{item.title}</p>
@@ -110,7 +110,7 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
                 {new Date(item.createdAt).toLocaleDateString('fr-FR')}
               </p>
             </div>
-            <div className="flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
               <Button
                 variant="outline"
                 size="sm"
@@ -125,9 +125,15 @@ export function SheetList({ refreshKey = 0, onError }: SheetListProps) {
                 {t('action.preview')}
               </Button>
               <Button asChild variant="outline" size="sm">
-                <Link to={`/improve/${item.id}`}>
+                <Link to={`/sheets/${item.id}/edit`}>
                   <FilePenLine className="size-4" />
                   {t('action.edit')}
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="sm">
+                <Link to={`/improve/${item.id}`}>
+                  <Sparkles className="size-4" />
+                  {t('action.improve')}
                 </Link>
               </Button>
               <Button

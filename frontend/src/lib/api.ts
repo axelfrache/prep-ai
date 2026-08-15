@@ -5,6 +5,7 @@ import type {
   ImproveSheetPayload,
   SavedSheet,
   SheetSummary,
+  UpdateSheetPayload,
   UpdateProfilePayload,
 } from '@/types/preparation'
 import { translateCurrent } from '@/lib/i18n'
@@ -112,6 +113,10 @@ export function listSheets(): Promise<SheetSummary[]> {
 
 export function getSheet(id: string): Promise<SavedSheet> {
   return request(`/api/sheets/${id}`)
+}
+
+export function updateSheet(id: string, payload: UpdateSheetPayload): Promise<SavedSheet> {
+  return request(`/api/sheets/${id}`, { method: 'PATCH', body: JSON.stringify(payload) })
 }
 
 export function deleteSheet(id: string): Promise<void> {

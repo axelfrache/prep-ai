@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { CreatePage } from '@/pages/CreatePage'
+import { EditSheetPage } from '@/pages/EditSheetPage'
 import { HomePage } from '@/pages/HomePage'
 import { ImprovePage } from '@/pages/ImprovePage'
 import { LoginPage } from '@/pages/LoginPage'
@@ -39,6 +40,7 @@ function App() {
         <Route path="create" element={<CreatePage />} />
         <Route path="improve" element={<ImprovePage />} />
         <Route path="improve/:sheetId" element={<ImprovePage />} />
+        <Route path="sheets/:sheetId/edit" element={<EditSheetPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

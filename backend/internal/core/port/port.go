@@ -12,6 +12,7 @@ type PreparationService interface {
 	ImproveSavedSheet(ctx context.Context, userID, sheetID string, req domain.ImproveSavedRequest) (domain.SavedSheet, error)
 	ListSheets(ctx context.Context, userID string) ([]domain.SavedSheet, error)
 	GetSheet(ctx context.Context, userID, sheetID string) (domain.SavedSheet, error)
+	UpdateSheet(ctx context.Context, userID, sheetID string, sheet domain.Sheet) (domain.SavedSheet, error)
 	DeleteSheet(ctx context.Context, userID, sheetID string) error
 }
 

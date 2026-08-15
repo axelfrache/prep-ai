@@ -83,6 +83,21 @@ func (h *Handler) GetSheet(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 	writeJSON(w, stdhttp.StatusOK, newSavedSheetDTO(saved))
 }
 
+func (h *Handler) UpdateSheet(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	var dto sheetDTO
+	if err := decodeJSON(w, r, &dto); err != nil {
+		writeError(w, err)
+		return
+	}
+
+	saved, err := h.service.UpdateSheet(r.Context(), userIDFromContext(r.Context()), r.PathValue("id"), dto.toDomain())
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, stdhttp.StatusOK, newSavedSheetDTO(saved))
+}
+
 func (h *Handler) DeleteSheet(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 	if err := h.service.DeleteSheet(r.Context(), userIDFromContext(r.Context()), r.PathValue("id")); err != nil {
 		writeError(w, err)

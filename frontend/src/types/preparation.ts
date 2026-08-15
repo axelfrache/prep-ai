@@ -81,6 +81,8 @@ export type ImproveSavedSheetPayload = {
   saveMode?: SavedSheetSaveMode
 }
 
+export type UpdateSheetPayload = PreparationSheet
+
 export type AuthUser = {
   id: string
   email: string
