@@ -42,21 +42,41 @@ func (p *Preparation) ImproveSheet(ctx context.Context, userID string, req domai
 }
 
 func (p *Preparation) ImproveSavedSheet(ctx context.Context, userID, sheetID string, req domain.ImproveSavedRequest) (domain.SavedSheet, error) {
+	saveMode := domain.NormalizeSavedSheetSaveMode(req.SaveMode)
 	saved, err := p.GetSheet(ctx, userID, sheetID)
 	if err != nil {
 		return domain.SavedSheet{}, err
 	}
 
-	return p.ImproveSheet(ctx, userID, domain.ImproveRequest{
+	clean, err := domain.ImproveRequest{
 		ExistingSheet: domain.Document{
 			Name: saved.Sheet.Title + ".txt",
 			Type: "txt",
 			Text: formatSheetForImprovement(saved.Sheet),
 		},
-		Notes:          req.Notes,
-		Resources:      req.Resources,
-		GenerationMode: req.GenerationMode,
-	})
+		Notes:              req.Notes,
+		AvailableMaterials: req.AvailableMaterials,
+		Resources:          req.Resources,
+		GenerationMode:     req.GenerationMode,
+	}.Validate()
+	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+	sheet, err := p.generator.Generate(ctx, buildImprovePrompt(clean), clean.GenerationMode)
+	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+	if saveMode == domain.SavedSheetSaveModeCopy {
+		return p.sheets.Save(ctx, userID, sheet)
+	}
+	updated, err := p.sheets.Update(ctx, userID, sheetID, sheet)
+	if err != nil {
+		if errors.Is(err, port.ErrNotFound) {
+			return domain.SavedSheet{}, domain.ErrSheetNotFound()
+		}
+		return domain.SavedSheet{}, err
+	}
+	return updated, nil
 }
 
 func (p *Preparation) ListSheets(ctx context.Context, userID string) ([]domain.SavedSheet, error) {

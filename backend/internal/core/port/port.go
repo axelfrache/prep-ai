@@ -36,6 +36,7 @@ type UserRepository interface {
 
 type SheetRepository interface {
 	Save(ctx context.Context, userID string, sheet domain.Sheet) (domain.SavedSheet, error)
+	Update(ctx context.Context, userID, sheetID string, sheet domain.Sheet) (domain.SavedSheet, error)
 	ListByUser(ctx context.Context, userID string) ([]domain.SavedSheet, error)
 	GetByID(ctx context.Context, userID, sheetID string) (domain.SavedSheet, error)
 	Delete(ctx context.Context, userID, sheetID string) error

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { AdvancedModeToggle } from '@/components/AdvancedModeToggle'
+import { AvailableMaterialsField } from '@/components/AvailableMaterialsField'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -31,6 +32,7 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
   const [duration, setDuration] = useState('45')
   const [period, setPeriod] = useState('')
   const [notes, setNotes] = useState('')
+  const [availableMaterials, setAvailableMaterials] = useState('')
   const [files, setFiles] = useState<FileList | null>(null)
   const [advancedMode, setAdvancedMode] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -55,6 +57,7 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
         durationMinutes,
         resources,
         notes: notes.trim() || undefined,
+        availableMaterials: availableMaterials.trim() || undefined,
         period: period.trim() || undefined,
         generationMode: advancedMode ? 'advanced' : 'fast',
       })
@@ -120,6 +123,12 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
         />
         <p className="text-xs text-muted-foreground">{t('create.resourcesHelp')}</p>
       </div>
+
+      <AvailableMaterialsField
+        id="create-available-materials"
+        value={availableMaterials}
+        onChange={setAvailableMaterials}
+      />
 
       <details className="rounded-lg border bg-muted/30 px-4 py-3 text-sm">
         <summary className="cursor-pointer font-medium">{t('create.details')}</summary>

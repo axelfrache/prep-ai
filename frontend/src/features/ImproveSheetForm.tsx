@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { AdvancedModeToggle } from '@/components/AdvancedModeToggle'
+import { AvailableMaterialsField } from '@/components/AvailableMaterialsField'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -12,7 +13,8 @@ import {
   extractDocumentText,
 } from '@/lib/documentExtractors'
 import { translateCurrent, useI18n } from '@/lib/i18n'
-import type { GenerationMode, SavedSheet } from '@/types/preparation'
+import { cn } from '@/lib/utils'
+import type { GenerationMode, SavedSheet, SavedSheetSaveMode } from '@/types/preparation'
 
 type ImproveSheetFormProps = {
   savedSheetId?: string
@@ -31,7 +33,9 @@ export function ImproveSheetForm({
   const [sheetFile, setSheetFile] = useState<File | null>(null)
   const [resourceFiles, setResourceFiles] = useState<FileList | null>(null)
   const [notes, setNotes] = useState('')
+  const [availableMaterials, setAvailableMaterials] = useState('')
   const [advancedMode, setAdvancedMode] = useState(false)
+  const [saveMode, setSaveMode] = useState<SavedSheetSaveMode>('replace')
   const [submitting, setSubmitting] = useState(false)
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -49,6 +53,8 @@ export function ImproveSheetForm({
       const payload = {
         resources,
         notes: notes.trim() || undefined,
+        availableMaterials: availableMaterials.trim() || undefined,
+        saveMode: savedSheetId ? saveMode : undefined,
         generationMode,
       }
       const result = savedSheetId
@@ -68,11 +74,30 @@ export function ImproveSheetForm({
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       {savedSheetId ? (
-        <div className="rounded-lg border bg-primary/5 px-4 py-3">
-          <p className="text-sm font-medium">{t('improve.savedSelected')}</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {savedSheetTitle ?? t('improve.savedFallback')}
-          </p>
+        <div className="space-y-4 rounded-lg border bg-primary/5 px-4 py-3">
+          <div>
+            <p className="text-sm font-medium">{t('improve.savedSelected')}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {savedSheetTitle ?? t('improve.savedFallback')}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">{t('improve.saveModeTitle')}</p>
+            <div className="grid gap-2 sm:grid-cols-2">
+              <SaveModeButton
+                active={saveMode === 'replace'}
+                title={t('improve.saveModeReplace')}
+                description={t('improve.saveModeReplaceDescription')}
+                onClick={() => setSaveMode('replace')}
+              />
+              <SaveModeButton
+                active={saveMode === 'copy'}
+                title={t('improve.saveModeCopy')}
+                description={t('improve.saveModeCopyDescription')}
+                onClick={() => setSaveMode('copy')}
+              />
+            </div>
+          </div>
         </div>
       ) : (
         <div className="space-y-2">
@@ -99,6 +124,12 @@ export function ImproveSheetForm({
         />
       </div>
 
+      <AvailableMaterialsField
+        id="improve-available-materials"
+        value={availableMaterials}
+        onChange={setAvailableMaterials}
+      />
+
       <div className="space-y-2">
         <Label htmlFor="improve-notes">{t('improve.notes')}</Label>
         <Textarea
@@ -117,6 +148,34 @@ export function ImproveSheetForm({
         {submitting ? t('improve.submitting') : t('improve.submit')}
       </Button>
     </form>
+  )
+}
+
+function SaveModeButton({
+  active,
+  title,
+  description,
+  onClick,
+}: {
+  active: boolean
+  title: string
+  description: string
+  onClick: () => void
+}) {
+  return (
+    <button
+      type="button"
+      className={cn(
+        'rounded-lg border bg-background px-3 py-2 text-left transition-colors',
+        active ? 'border-primary bg-primary/10' : 'hover:bg-accent/40',
+      )}
+      onClick={onClick}
+    >
+      <span className="block text-sm font-medium">{title}</span>
+      <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+        {description}
+      </span>
+    </button>
   )
 }
 

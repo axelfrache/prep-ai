@@ -52,6 +52,7 @@ export type ExtractedDocument = {
 }
 
 export type GenerationMode = 'fast' | 'advanced'
+export type SavedSheetSaveMode = 'replace' | 'copy'
 
 export type CreateSheetPayload = {
   subject: string
@@ -59,6 +60,7 @@ export type CreateSheetPayload = {
   durationMinutes: number
   resources: ExtractedDocument[]
   notes?: string
+  availableMaterials?: string
   period?: string
   generationMode?: GenerationMode
 }
@@ -67,13 +69,16 @@ export type ImproveSheetPayload = {
   existingSheet: ExtractedDocument
   resources: ExtractedDocument[]
   notes?: string
+  availableMaterials?: string
   generationMode?: GenerationMode
 }
 
 export type ImproveSavedSheetPayload = {
   resources: ExtractedDocument[]
   notes?: string
+  availableMaterials?: string
   generationMode?: GenerationMode
+  saveMode?: SavedSheetSaveMode
 }
 
 export type AuthUser = {

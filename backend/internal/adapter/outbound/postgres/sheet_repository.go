@@ -38,6 +38,28 @@ func (r *SheetRepository) Save(ctx context.Context, userID string, sheet domain.
 	return saved, nil
 }
 
+func (r *SheetRepository) Update(ctx context.Context, userID, sheetID string, sheet domain.Sheet) (domain.SavedSheet, error) {
+	data, err := json.Marshal(sheet)
+	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+
+	const q = `UPDATE sheets
+	           SET title = $3, data = $4
+	           WHERE id = $1 AND user_id = $2
+	           RETURNING id, created_at`
+
+	saved := domain.SavedSheet{UserID: userID, Sheet: sheet}
+	if err := r.pool.QueryRow(ctx, q, sheetID, userID, sheet.Title, data).
+		Scan(&saved.ID, &saved.CreatedAt); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return domain.SavedSheet{}, port.ErrNotFound
+		}
+		return domain.SavedSheet{}, err
+	}
+	return saved, nil
+}
+
 func (r *SheetRepository) ListByUser(ctx context.Context, userID string) ([]domain.SavedSheet, error) {
 	const q = `SELECT id, data, created_at FROM sheets
 	           WHERE user_id = $1 ORDER BY created_at DESC`

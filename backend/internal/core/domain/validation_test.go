@@ -35,6 +35,18 @@ func TestCreateRequestValidate_AdvancedGenerationMode(t *testing.T) {
 	}
 }
 
+func TestCreateRequestValidate_AvailableMaterials(t *testing.T) {
+	req := validCreate()
+	req.AvailableMaterials = "  ardoises, cahier du jour  "
+	clean, err := req.Validate()
+	if err != nil {
+		t.Fatalf("expected nil, got %v", err)
+	}
+	if clean.AvailableMaterials != "ardoises, cahier du jour" {
+		t.Fatalf("unexpected available materials: %q", clean.AvailableMaterials)
+	}
+}
+
 func TestCreateRequestValidate_Errors(t *testing.T) {
 	cases := []struct {
 		name string

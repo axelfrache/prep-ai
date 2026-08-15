@@ -16,33 +16,40 @@ type Document struct {
 }
 
 type GenerationMode string
+type SavedSheetSaveMode string
 
 const (
-	GenerationModeFast     GenerationMode = "fast"
-	GenerationModeAdvanced GenerationMode = "advanced"
+	GenerationModeFast        GenerationMode     = "fast"
+	GenerationModeAdvanced    GenerationMode     = "advanced"
+	SavedSheetSaveModeReplace SavedSheetSaveMode = "replace"
+	SavedSheetSaveModeCopy    SavedSheetSaveMode = "copy"
 )
 
 type CreateRequest struct {
-	Subject         string
-	Level           string
-	DurationMinutes int
-	Period          string
-	Notes           string
-	Resources       []Document
-	GenerationMode  GenerationMode
+	Subject            string
+	Level              string
+	DurationMinutes    int
+	Period             string
+	Notes              string
+	AvailableMaterials string
+	Resources          []Document
+	GenerationMode     GenerationMode
 }
 
 type ImproveRequest struct {
-	ExistingSheet  Document
-	Notes          string
-	Resources      []Document
-	GenerationMode GenerationMode
+	ExistingSheet      Document
+	Notes              string
+	AvailableMaterials string
+	Resources          []Document
+	GenerationMode     GenerationMode
 }
 
 type ImproveSavedRequest struct {
-	Notes          string
-	Resources      []Document
-	GenerationMode GenerationMode
+	Notes              string
+	AvailableMaterials string
+	Resources          []Document
+	GenerationMode     GenerationMode
+	SaveMode           SavedSheetSaveMode
 }
 
 func normalizeType(t string) string {

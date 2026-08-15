@@ -12,12 +12,13 @@ const (
 
 func (r CreateRequest) Validate() (CreateRequest, error) {
 	out := CreateRequest{
-		Subject:         strings.TrimSpace(r.Subject),
-		Level:           strings.TrimSpace(r.Level),
-		DurationMinutes: r.DurationMinutes,
-		Period:          strings.TrimSpace(r.Period),
-		Notes:           strings.TrimSpace(r.Notes),
-		GenerationMode:  normalizeGenerationMode(r.GenerationMode),
+		Subject:            strings.TrimSpace(r.Subject),
+		Level:              strings.TrimSpace(r.Level),
+		DurationMinutes:    r.DurationMinutes,
+		Period:             strings.TrimSpace(r.Period),
+		Notes:              strings.TrimSpace(r.Notes),
+		AvailableMaterials: strings.TrimSpace(r.AvailableMaterials),
+		GenerationMode:     normalizeGenerationMode(r.GenerationMode),
 	}
 
 	if out.Subject == "" {
@@ -36,7 +37,10 @@ func (r CreateRequest) Validate() (CreateRequest, error) {
 	}
 	out.Resources = resources
 
-	texts := append([]string{out.Subject, out.Level, out.Notes}, documentTexts(resources)...)
+	texts := append(
+		[]string{out.Subject, out.Level, out.Notes, out.AvailableMaterials},
+		documentTexts(resources)...,
+	)
 	if err := checkTotalText(texts); err != nil {
 		return out, err
 	}
@@ -45,8 +49,9 @@ func (r CreateRequest) Validate() (CreateRequest, error) {
 
 func (r ImproveRequest) Validate() (ImproveRequest, error) {
 	out := ImproveRequest{
-		Notes:          strings.TrimSpace(r.Notes),
-		GenerationMode: normalizeGenerationMode(r.GenerationMode),
+		Notes:              strings.TrimSpace(r.Notes),
+		AvailableMaterials: strings.TrimSpace(r.AvailableMaterials),
+		GenerationMode:     normalizeGenerationMode(r.GenerationMode),
 	}
 
 	existing, err := validateDocument(r.ExistingSheet)
@@ -61,7 +66,10 @@ func (r ImproveRequest) Validate() (ImproveRequest, error) {
 	}
 	out.Resources = resources
 
-	texts := append([]string{existing.Text, out.Notes}, documentTexts(resources)...)
+	texts := append(
+		[]string{existing.Text, out.Notes, out.AvailableMaterials},
+		documentTexts(resources)...,
+	)
 	if err := checkTotalText(texts); err != nil {
 		return out, err
 	}
@@ -128,5 +136,14 @@ func normalizeGenerationMode(mode GenerationMode) GenerationMode {
 		return GenerationModeAdvanced
 	default:
 		return GenerationModeFast
+	}
+}
+
+func NormalizeSavedSheetSaveMode(mode SavedSheetSaveMode) SavedSheetSaveMode {
+	switch SavedSheetSaveMode(strings.ToLower(strings.TrimSpace(string(mode)))) {
+	case SavedSheetSaveModeCopy:
+		return SavedSheetSaveModeCopy
+	default:
+		return SavedSheetSaveModeReplace
 	}
 }

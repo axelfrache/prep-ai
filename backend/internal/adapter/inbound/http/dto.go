@@ -25,54 +25,62 @@ func toDomainDocuments(in []documentDTO) []domain.Document {
 }
 
 type createRequestDTO struct {
-	Subject         string        `json:"subject"`
-	Level           string        `json:"level"`
-	DurationMinutes int           `json:"durationMinutes"`
-	Period          string        `json:"period"`
-	Notes           string        `json:"notes"`
-	Resources       []documentDTO `json:"resources"`
-	GenerationMode  string        `json:"generationMode"`
+	Subject            string        `json:"subject"`
+	Level              string        `json:"level"`
+	DurationMinutes    int           `json:"durationMinutes"`
+	Period             string        `json:"period"`
+	Notes              string        `json:"notes"`
+	AvailableMaterials string        `json:"availableMaterials"`
+	Resources          []documentDTO `json:"resources"`
+	GenerationMode     string        `json:"generationMode"`
 }
 
 func (r createRequestDTO) toDomain() domain.CreateRequest {
 	return domain.CreateRequest{
-		Subject:         r.Subject,
-		Level:           r.Level,
-		DurationMinutes: r.DurationMinutes,
-		Period:          r.Period,
-		Notes:           r.Notes,
-		Resources:       toDomainDocuments(r.Resources),
-		GenerationMode:  domain.GenerationMode(r.GenerationMode),
+		Subject:            r.Subject,
+		Level:              r.Level,
+		DurationMinutes:    r.DurationMinutes,
+		Period:             r.Period,
+		Notes:              r.Notes,
+		AvailableMaterials: r.AvailableMaterials,
+		Resources:          toDomainDocuments(r.Resources),
+		GenerationMode:     domain.GenerationMode(r.GenerationMode),
 	}
 }
 
 type improveRequestDTO struct {
-	ExistingSheet  documentDTO   `json:"existingSheet"`
-	Notes          string        `json:"notes"`
-	Resources      []documentDTO `json:"resources"`
-	GenerationMode string        `json:"generationMode"`
+	ExistingSheet      documentDTO   `json:"existingSheet"`
+	Notes              string        `json:"notes"`
+	AvailableMaterials string        `json:"availableMaterials"`
+	Resources          []documentDTO `json:"resources"`
+	GenerationMode     string        `json:"generationMode"`
 }
 
 func (r improveRequestDTO) toDomain() domain.ImproveRequest {
 	return domain.ImproveRequest{
-		ExistingSheet:  r.ExistingSheet.toDomain(),
-		Notes:          r.Notes,
-		Resources:      toDomainDocuments(r.Resources),
-		GenerationMode: domain.GenerationMode(r.GenerationMode),
+		ExistingSheet:      r.ExistingSheet.toDomain(),
+		Notes:              r.Notes,
+		AvailableMaterials: r.AvailableMaterials,
+		Resources:          toDomainDocuments(r.Resources),
+		GenerationMode:     domain.GenerationMode(r.GenerationMode),
 	}
 }
 
 type improveSavedRequestDTO struct {
-	Notes          string        `json:"notes"`
-	Resources      []documentDTO `json:"resources"`
-	GenerationMode string        `json:"generationMode"`
+	Notes              string        `json:"notes"`
+	AvailableMaterials string        `json:"availableMaterials"`
+	Resources          []documentDTO `json:"resources"`
+	GenerationMode     string        `json:"generationMode"`
+	SaveMode           string        `json:"saveMode"`
 }
 
 func (r improveSavedRequestDTO) toDomain() domain.ImproveSavedRequest {
 	return domain.ImproveSavedRequest{
-		Notes:          r.Notes,
-		Resources:      toDomainDocuments(r.Resources),
-		GenerationMode: domain.GenerationMode(r.GenerationMode),
+		Notes:              r.Notes,
+		AvailableMaterials: r.AvailableMaterials,
+		Resources:          toDomainDocuments(r.Resources),
+		GenerationMode:     domain.GenerationMode(r.GenerationMode),
+		SaveMode:           domain.SavedSheetSaveMode(r.SaveMode),
 	}
 }
 

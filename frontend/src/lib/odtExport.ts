@@ -4,6 +4,7 @@ import {
   downloadBlob,
   escapeXml,
   groupPhaseBlocks,
+  mergedGuidanceText,
   sheetFilename,
   sheetList,
 } from '@/lib/exportUtils'
@@ -64,24 +65,18 @@ function metaTable(sheet: PreparationSheet): string {
 
 function phaseTable(sheet: PreparationSheet): string {
   const header = row([
-    cell(translateCurrent('xlsx.phase'), true),
-    cell(translateCurrent('xlsx.duration'), true),
+    cell(translateCurrent('sheet.phaseDuration'), true),
     cell(translateCurrent('xlsx.organization'), true),
     cell(translateCurrent('sheet.steps'), true),
-    cell(translateCurrent('xlsx.teacherWords'), true),
-    cell(translateCurrent('xlsx.expectedAnswers'), true),
-    cell(translateCurrent('sheet.anticipations'), true),
+    cell(translateCurrent('docx.guidance'), true),
   ])
   const rows = sheet.phases.map((phase) => {
     const blocks = groupPhaseBlocks(phase.blocks)
     return row([
-      cell(phase.name),
-      cell(`${phase.durationMinutes} min`),
+      cell(`${phase.name}\n${phase.durationMinutes} min`),
       cell(phase.organization),
       cell(blocks.instructions),
-      cell(blocks.teacherWords),
-      cell(blocks.expectedAnswers),
-      cell(blocks.anticipations),
+      cell(mergedGuidanceText(blocks)),
     ])
   })
   return table([header, ...rows])

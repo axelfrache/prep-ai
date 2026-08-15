@@ -15,7 +15,7 @@ const jsonContract = `==================================================
 MANDATORY JSON FORMAT FOR THE APPLICATION
 ==================================================
 
-Return only this structured JSON. All lesson-sheet content values must be written in French:
+Return only this structured JSON. All lesson-sheet content values must be written in French with correct French accents and typography:
 
 {
   "sheet": {
@@ -50,6 +50,8 @@ Allowed block types:
 - extension
 
 Do not generate HTML, Markdown, HTML tables, colors, or visual styling.
+Do not transliterate French. Keep accents in every generated French value: write "élève", "être", "séance", "matériel", "différenciation", "à", "où", "ça"; never write "eleve", "etre", "seance", "materiel", "a", "ou", "ca" when the accented form is required.
+If available materials are provided, use them as a strong constraint: prioritize that material in the "materials" field and in the lesson flow, and avoid suggesting unavailable material unless it is truly necessary.
 Use teacher_speech and teacher_relaunch for what the teacher can say directly.`
 
 func buildCreatePrompt(req domain.CreateRequest) string {
@@ -64,6 +66,7 @@ func buildCreatePrompt(req domain.CreateRequest) string {
 	fmt.Fprintf(&b, "Level: %s\n", req.Level)
 	fmt.Fprintf(&b, "Duration: %d min\n", req.DurationMinutes)
 	b.WriteString(optionalLine("Optional period", "Period: not specified", req.Period))
+	b.WriteString(optionalLine("Available materials", "Available materials: not specified", req.AvailableMaterials))
 	b.WriteString(optionalLine("Notes", "Notes: none", req.Notes))
 	b.WriteString("\nResources:\n")
 	b.WriteString(formatResources(req.Resources))
@@ -76,7 +79,7 @@ func buildImprovePrompt(req domain.ImproveRequest) string {
 	b.WriteString(`You are a lesson-preparation assistant for a Cycle 2 teacher, mainly for CE2.
 
 You must improve an existing preparation sheet without turning it into a huge academic document.
-All generated lesson-sheet content must be written in French.
+All generated lesson-sheet content must be written in French with correct French accents and typography.
 
 Product philosophy:
 - the user mainly provides her current sheet;
@@ -94,12 +97,15 @@ Improvement rules:
 - add expected answers for important questions;
 - anticipate frequent mistakes;
 - add concrete differentiation without overloading the sheet;
+- prioritize the available materials provided by the user and avoid adding unavailable material unless truly necessary;
 - reduce materials where possible, prioritizing board, projector, slate, notebook, and textbook;
 - keep the style simple, direct, and operational.
 
 Output constraints:
 - return only a valid JSON object;
 - follow the requested schema exactly;
+- keep French accents in generated values: write "élève", "être", "séance", "matériel", "différenciation", "à", "où", "ça";
+- never transliterate accented French words into ASCII-only text;
 - never produce HTML, Markdown, colors, or visual styling;
 - use only the allowed block types;
 - identify teacher speech with teacher_speech or teacher_relaunch.
@@ -107,6 +113,8 @@ Output constraints:
 `)
 	b.WriteString(jsonContract)
 	fmt.Fprintf(&b, "\n\nExisting sheet (%s):\n%s\n", req.ExistingSheet.Name, req.ExistingSheet.Text)
+	b.WriteString("\nAvailable materials:\n")
+	b.WriteString(orDefault(req.AvailableMaterials, "Not specified."))
 	b.WriteString("\nAdditional resources:\n")
 	b.WriteString(formatResourcesOr(req.Resources, "No additional resource."))
 	fmt.Fprintf(&b, "\n\nNotes:\n%s\n", orDefault(req.Notes, "No notes."))

@@ -4,6 +4,7 @@ import {
   downloadBlob,
   escapeXml,
   groupPhaseBlocks,
+  mergedGuidanceText,
   sheetFilename,
   sheetList,
   xmlHeader,
@@ -25,7 +26,7 @@ type ParagraphOptions = {
 
 const contentWidth = 15400
 const metaColumnWidths = [2500, contentWidth - 2500]
-const phaseColumnWidths = [1900, 800, 1600, 3400, 3000, 2200, 2500]
+const phaseColumnWidths = [2600, 1900, 5200, 5700]
 
 export async function exportSheetToDocx(sheet: PreparationSheet): Promise<void> {
   const zip = new JSZip()
@@ -82,36 +83,24 @@ function metaTable(sheet: PreparationSheet): string {
 
 function phaseTable(sheet: PreparationSheet): string {
   const header = tableRow([
-    tableCell(translateCurrent('xlsx.phase'), { header: true, width: phaseColumnWidths[0] }),
-    tableCell(translateCurrent('xlsx.duration'), { header: true, width: phaseColumnWidths[1] }),
-    tableCell(translateCurrent('xlsx.organization'), {
+    tableCell(translateCurrent('sheet.phaseDuration'), {
       header: true,
-      width: phaseColumnWidths[2],
+      width: phaseColumnWidths[0],
     }),
-    tableCell(translateCurrent('sheet.steps'), { header: true, width: phaseColumnWidths[3] }),
-    tableCell(translateCurrent('xlsx.teacherWords'), {
+    tableCell(translateCurrent('xlsx.organization'), { header: true, width: phaseColumnWidths[1] }),
+    tableCell(translateCurrent('sheet.steps'), { header: true, width: phaseColumnWidths[2] }),
+    tableCell(translateCurrent('docx.guidance'), {
       header: true,
-      width: phaseColumnWidths[4],
-    }),
-    tableCell(translateCurrent('xlsx.expectedAnswers'), {
-      header: true,
-      width: phaseColumnWidths[5],
-    }),
-    tableCell(translateCurrent('sheet.anticipations'), {
-      header: true,
-      width: phaseColumnWidths[6],
+      width: phaseColumnWidths[3],
     }),
   ])
   const rows = sheet.phases.map((phase) => {
     const blocks = groupPhaseBlocks(phase.blocks)
     return tableRow([
-      tableCell(phase.name, { width: phaseColumnWidths[0] }),
-      tableCell(`${phase.durationMinutes} min`, { width: phaseColumnWidths[1] }),
-      tableCell(phase.organization, { width: phaseColumnWidths[2] }),
-      tableCell(blocks.instructions, { width: phaseColumnWidths[3] }),
-      tableCell(blocks.teacherWords, { width: phaseColumnWidths[4] }),
-      tableCell(blocks.expectedAnswers, { width: phaseColumnWidths[5] }),
-      tableCell(blocks.anticipations, { width: phaseColumnWidths[6] }),
+      tableCell(`${phase.name}\n${phase.durationMinutes} min`, { width: phaseColumnWidths[0] }),
+      tableCell(phase.organization, { width: phaseColumnWidths[1] }),
+      tableCell(blocks.instructions, { width: phaseColumnWidths[2] }),
+      tableCell(mergedGuidanceText(blocks), { width: phaseColumnWidths[3] }),
     ])
   })
   return table([header, ...rows], phaseColumnWidths)

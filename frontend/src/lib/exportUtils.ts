@@ -8,6 +8,11 @@ export type BlockGroup = {
   anticipations: string
 }
 
+type LabeledSection = {
+  label: string
+  content: string
+}
+
 export function sheetFilename(sheet: PreparationSheet, extension: string): string {
   return `${slugify(sheet.title || 'preparation-sheet')}.${extension}`
 }
@@ -25,6 +30,21 @@ export function groupPhaseBlocks(blocks: PreparationBlock[]): BlockGroup {
     expectedAnswers: numberedBlocks(blocks, ['expected_answer']),
     anticipations: numberedBlocks(blocks, ['anticipated_error', 'support', 'extension']),
   }
+}
+
+export function mergedGuidanceText(blocks: BlockGroup): string {
+  return labeledSections([
+    { label: translateCurrent('xlsx.teacherWords'), content: blocks.teacherWords },
+    { label: translateCurrent('xlsx.expectedAnswers'), content: blocks.expectedAnswers },
+    { label: translateCurrent('sheet.anticipations'), content: blocks.anticipations },
+  ])
+}
+
+export function labeledSections(sections: LabeledSection[]): string {
+  return sections
+    .filter((section) => section.content.trim().length > 0)
+    .map((section) => `${section.label}\n${section.content}`)
+    .join('\n\n')
 }
 
 export function numberedBlocks(
