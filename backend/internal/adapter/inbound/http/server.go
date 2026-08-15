@@ -8,9 +8,10 @@ import (
 	"github.com/axelfrache/prep-ai/backend/internal/core/port"
 )
 
-func NewRouter(prep port.PreparationService, auth port.AuthService, allowedOrigins []string) stdhttp.Handler {
+func NewRouter(prep port.PreparationService, auth port.AuthService, classProfile port.ClassProfileService, allowedOrigins []string) stdhttp.Handler {
 	handler := NewHandler(prep)
 	authHandler := NewAuthHandler(auth)
+	classProfileHandler := NewClassProfileHandler(classProfile)
 	protected := authMiddleware(auth)
 
 	mux := stdhttp.NewServeMux()
@@ -20,6 +21,8 @@ func NewRouter(prep port.PreparationService, auth port.AuthService, allowedOrigi
 
 	mux.Handle("GET /api/me", protected(stdhttp.HandlerFunc(authHandler.Me)))
 	mux.Handle("PATCH /api/me", protected(stdhttp.HandlerFunc(authHandler.UpdateMe)))
+	mux.Handle("GET /api/class-profile", protected(stdhttp.HandlerFunc(classProfileHandler.Get)))
+	mux.Handle("PATCH /api/class-profile", protected(stdhttp.HandlerFunc(classProfileHandler.Update)))
 	mux.Handle("POST /api/create", protected(stdhttp.HandlerFunc(handler.Create)))
 	mux.Handle("POST /api/improve", protected(stdhttp.HandlerFunc(handler.Improve)))
 	mux.Handle("GET /api/sheets", protected(stdhttp.HandlerFunc(handler.ListSheets)))

@@ -1,5 +1,6 @@
 import type {
   AuthResponse,
+  ClassProfile,
   CreateSheetPayload,
   ImproveSavedSheetPayload,
   ImproveSheetPayload,
@@ -90,6 +91,14 @@ export function getMe(): Promise<AuthResponse['user']> {
 
 export function updateMe(payload: UpdateProfilePayload): Promise<AuthResponse['user']> {
   return request('/api/me', { method: 'PATCH', body: JSON.stringify(payload) })
+}
+
+export function getClassProfile(): Promise<ClassProfile> {
+  return request('/api/class-profile')
+}
+
+export function updateClassProfile(payload: ClassProfile): Promise<ClassProfile> {
+  return request('/api/class-profile', { method: 'PATCH', body: JSON.stringify(payload) })
 }
 
 export function createSheet(payload: CreateSheetPayload): Promise<SavedSheet> {

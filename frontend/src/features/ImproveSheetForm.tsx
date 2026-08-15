@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { AdvancedModeToggle } from '@/components/AdvancedModeToggle'
 import { AvailableMaterialsField } from '@/components/AvailableMaterialsField'
+import { ClassAdaptationToggle } from '@/components/ClassAdaptationToggle'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,6 +35,7 @@ export function ImproveSheetForm({
   const [resourceFiles, setResourceFiles] = useState<FileList | null>(null)
   const [notes, setNotes] = useState('')
   const [availableMaterials, setAvailableMaterials] = useState('')
+  const [adaptToClass, setAdaptToClass] = useState(false)
   const [advancedMode, setAdvancedMode] = useState(false)
   const [saveMode, setSaveMode] = useState<SavedSheetSaveMode>('replace')
   const [submitting, setSubmitting] = useState(false)
@@ -54,6 +56,7 @@ export function ImproveSheetForm({
         resources,
         notes: notes.trim() || undefined,
         availableMaterials: availableMaterials.trim() || undefined,
+        adaptToClass,
         saveMode: savedSheetId ? saveMode : undefined,
         generationMode,
       }
@@ -129,6 +132,8 @@ export function ImproveSheetForm({
         value={availableMaterials}
         onChange={setAvailableMaterials}
       />
+
+      <ClassAdaptationToggle checked={adaptToClass} onCheckedChange={setAdaptToClass} />
 
       <div className="space-y-2">
         <Label htmlFor="improve-notes">{t('improve.notes')}</Label>

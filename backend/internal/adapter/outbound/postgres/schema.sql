@@ -14,3 +14,9 @@ CREATE TABLE IF NOT EXISTS sheets (
 );
 
 CREATE INDEX IF NOT EXISTS sheets_user_created_idx ON sheets (user_id, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS class_profiles (
+    user_id    UUID PRIMARY KEY REFERENCES users (id) ON DELETE CASCADE,
+    data       JSONB NOT NULL DEFAULT '{}'::jsonb,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

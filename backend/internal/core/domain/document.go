@@ -32,6 +32,8 @@ type CreateRequest struct {
 	Period             string
 	Notes              string
 	AvailableMaterials string
+	AdaptToClass       bool
+	ClassContext       string
 	Resources          []Document
 	GenerationMode     GenerationMode
 }
@@ -40,6 +42,8 @@ type ImproveRequest struct {
 	ExistingSheet      Document
 	Notes              string
 	AvailableMaterials string
+	AdaptToClass       bool
+	ClassContext       string
 	Resources          []Document
 	GenerationMode     GenerationMode
 }
@@ -47,6 +51,7 @@ type ImproveRequest struct {
 type ImproveSavedRequest struct {
 	Notes              string
 	AvailableMaterials string
+	AdaptToClass       bool
 	Resources          []Document
 	GenerationMode     GenerationMode
 	SaveMode           SavedSheetSaveMode

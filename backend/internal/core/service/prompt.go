@@ -52,6 +52,7 @@ Allowed block types:
 Do not generate HTML, Markdown, HTML tables, colors, or visual styling.
 Do not transliterate French. Keep accents in every generated French value: write "élève", "être", "séance", "matériel", "différenciation", "à", "où", "ça"; never write "eleve", "etre", "seance", "materiel", "a", "ou", "ca" when the accented form is required.
 If available materials are provided, use them as a strong constraint: prioritize that material in the "materials" field and in the lesson flow, and avoid suggesting unavailable material unless it is truly necessary.
+If class profile context is provided, adapt the lesson to it without mentioning private student details unnecessarily. Local dynamic inputs, notes, resources, and available materials for the current request override global class preferences.
 Use teacher_speech and teacher_relaunch for what the teacher can say directly.`
 
 func buildCreatePrompt(req domain.CreateRequest) string {
@@ -67,6 +68,7 @@ func buildCreatePrompt(req domain.CreateRequest) string {
 	fmt.Fprintf(&b, "Duration: %d min\n", req.DurationMinutes)
 	b.WriteString(optionalLine("Optional period", "Period: not specified", req.Period))
 	b.WriteString(optionalLine("Available materials", "Available materials: not specified", req.AvailableMaterials))
+	b.WriteString(optionalBlock("Class profile context", "Class profile context: not used", req.ClassContext))
 	b.WriteString(optionalLine("Notes", "Notes: none", req.Notes))
 	b.WriteString("\nResources:\n")
 	b.WriteString(formatResources(req.Resources))
@@ -98,6 +100,8 @@ Improvement rules:
 - anticipate frequent mistakes;
 - add concrete differentiation without overloading the sheet;
 - prioritize the available materials provided by the user and avoid adding unavailable material unless truly necessary;
+- when class profile context is provided, adapt difficulty, routines, supports, and differentiation to it;
+- local notes, resources, and available materials for this request override global class preferences;
 - reduce materials where possible, prioritizing board, projector, slate, notebook, and textbook;
 - keep the style simple, direct, and operational.
 
@@ -115,6 +119,8 @@ Output constraints:
 	fmt.Fprintf(&b, "\n\nExisting sheet (%s):\n%s\n", req.ExistingSheet.Name, req.ExistingSheet.Text)
 	b.WriteString("\nAvailable materials:\n")
 	b.WriteString(orDefault(req.AvailableMaterials, "Not specified."))
+	b.WriteString("\nClass profile context:\n")
+	b.WriteString(orDefault(req.ClassContext, "Not used."))
 	b.WriteString("\nAdditional resources:\n")
 	b.WriteString(formatResourcesOr(req.Resources, "No additional resource."))
 	fmt.Fprintf(&b, "\n\nNotes:\n%s\n", orDefault(req.Notes, "No notes."))
@@ -141,6 +147,13 @@ func optionalLine(label, fallback, value string) string {
 		return fallback + "\n"
 	}
 	return fmt.Sprintf("%s : %s\n", label, value)
+}
+
+func optionalBlock(label, fallback, value string) string {
+	if value == "" {
+		return fallback + "\n"
+	}
+	return fmt.Sprintf("%s:\n%s\n", label, value)
 }
 
 func orDefault(value, fallback string) string {

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { AdvancedModeToggle } from '@/components/AdvancedModeToggle'
 import { AvailableMaterialsField } from '@/components/AvailableMaterialsField'
+import { ClassAdaptationToggle } from '@/components/ClassAdaptationToggle'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,6 +35,7 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
   const [notes, setNotes] = useState('')
   const [availableMaterials, setAvailableMaterials] = useState('')
   const [files, setFiles] = useState<FileList | null>(null)
+  const [adaptToClass, setAdaptToClass] = useState(false)
   const [advancedMode, setAdvancedMode] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
@@ -58,6 +60,7 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
         resources,
         notes: notes.trim() || undefined,
         availableMaterials: availableMaterials.trim() || undefined,
+        adaptToClass,
         period: period.trim() || undefined,
         generationMode: advancedMode ? 'advanced' : 'fast',
       })
@@ -129,6 +132,8 @@ export function CreateSheetForm({ onResult, onError }: CreateSheetFormProps) {
         value={availableMaterials}
         onChange={setAvailableMaterials}
       />
+
+      <ClassAdaptationToggle checked={adaptToClass} onCheckedChange={setAdaptToClass} />
 
       <details className="rounded-lg border bg-muted/30 px-4 py-3 text-sm">
         <summary className="cursor-pointer font-medium">{t('create.details')}</summary>

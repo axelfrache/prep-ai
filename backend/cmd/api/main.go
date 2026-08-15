@@ -38,6 +38,7 @@ func main() {
 
 	users := postgres.NewUserRepository(pool)
 	sheets := postgres.NewSheetRepository(pool)
+	classProfiles := postgres.NewClassProfileRepository(pool)
 	generator := gemini.New(
 		cfg.GeminiAPIKey,
 		cfg.GeminiDefaultModel,
@@ -47,10 +48,11 @@ func main() {
 	hasher := security.NewBcryptHasher()
 	tokens := security.NewJWTService(cfg.JWTSecret, cfg.JWTTTL)
 
-	preparation := service.New(generator, sheets)
+	preparation := service.New(generator, sheets, classProfiles)
 	auth := service.NewAuth(users, hasher, tokens)
+	classProfile := service.NewClassProfile(classProfiles)
 
-	router := httpadapter.NewRouter(preparation, auth, cfg.AllowedOrigins)
+	router := httpadapter.NewRouter(preparation, auth, classProfile, cfg.AllowedOrigins)
 	server := httpadapter.NewServer(cfg.Addr(), router)
 
 	go func() {

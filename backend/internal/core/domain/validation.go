@@ -18,6 +18,8 @@ func (r CreateRequest) Validate() (CreateRequest, error) {
 		Period:             strings.TrimSpace(r.Period),
 		Notes:              strings.TrimSpace(r.Notes),
 		AvailableMaterials: strings.TrimSpace(r.AvailableMaterials),
+		AdaptToClass:       r.AdaptToClass,
+		ClassContext:       strings.TrimSpace(r.ClassContext),
 		GenerationMode:     normalizeGenerationMode(r.GenerationMode),
 	}
 
@@ -38,7 +40,7 @@ func (r CreateRequest) Validate() (CreateRequest, error) {
 	out.Resources = resources
 
 	texts := append(
-		[]string{out.Subject, out.Level, out.Notes, out.AvailableMaterials},
+		[]string{out.Subject, out.Level, out.Notes, out.AvailableMaterials, out.ClassContext},
 		documentTexts(resources)...,
 	)
 	if err := checkTotalText(texts); err != nil {
@@ -51,6 +53,8 @@ func (r ImproveRequest) Validate() (ImproveRequest, error) {
 	out := ImproveRequest{
 		Notes:              strings.TrimSpace(r.Notes),
 		AvailableMaterials: strings.TrimSpace(r.AvailableMaterials),
+		AdaptToClass:       r.AdaptToClass,
+		ClassContext:       strings.TrimSpace(r.ClassContext),
 		GenerationMode:     normalizeGenerationMode(r.GenerationMode),
 	}
 
@@ -67,7 +71,7 @@ func (r ImproveRequest) Validate() (ImproveRequest, error) {
 	out.Resources = resources
 
 	texts := append(
-		[]string{existing.Text, out.Notes, out.AvailableMaterials},
+		[]string{existing.Text, out.Notes, out.AvailableMaterials, out.ClassContext},
 		documentTexts(resources)...,
 	)
 	if err := checkTotalText(texts); err != nil {

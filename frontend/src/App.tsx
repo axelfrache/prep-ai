@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AppLayout } from '@/components/layout/AppLayout'
+import { ClassProfilePage } from '@/pages/ClassProfilePage'
 import { CreatePage } from '@/pages/CreatePage'
 import { EditSheetPage } from '@/pages/EditSheetPage'
 import { HomePage } from '@/pages/HomePage'
@@ -41,6 +42,7 @@ function App() {
         <Route path="improve" element={<ImprovePage />} />
         <Route path="improve/:sheetId" element={<ImprovePage />} />
         <Route path="sheets/:sheetId/edit" element={<EditSheetPage />} />
+        <Route path="class" element={<ClassProfilePage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

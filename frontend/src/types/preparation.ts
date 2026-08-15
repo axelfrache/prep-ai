@@ -61,6 +61,7 @@ export type CreateSheetPayload = {
   resources: ExtractedDocument[]
   notes?: string
   availableMaterials?: string
+  adaptToClass?: boolean
   period?: string
   generationMode?: GenerationMode
 }
@@ -70,6 +71,7 @@ export type ImproveSheetPayload = {
   resources: ExtractedDocument[]
   notes?: string
   availableMaterials?: string
+  adaptToClass?: boolean
   generationMode?: GenerationMode
 }
 
@@ -77,11 +79,41 @@ export type ImproveSavedSheetPayload = {
   resources: ExtractedDocument[]
   notes?: string
   availableMaterials?: string
+  adaptToClass?: boolean
   generationMode?: GenerationMode
   saveMode?: SavedSheetSaveMode
 }
 
 export type UpdateSheetPayload = PreparationSheet
+
+export type NeedGroup = {
+  name: string
+  needs: string
+  adaptations: string
+}
+
+export type StudentProfile = {
+  name: string
+  strengths: string
+  difficulties: string
+  needs: string
+  adaptations: string
+}
+
+export type ClassProfile = {
+  level: string
+  studentCount: number
+  overallLevel: string
+  classroomContext: string
+  defaultMaterials: string
+  avoidMaterials: string
+  preferredSupports: string[]
+  defaultSessionDuration: number
+  pedagogicalPreferences: string[]
+  needGroups: NeedGroup[]
+  students: StudentProfile[]
+  updatedAt?: string
+}
 
 export type AuthUser = {
   id: string

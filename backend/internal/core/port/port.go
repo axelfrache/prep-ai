@@ -16,6 +16,11 @@ type PreparationService interface {
 	DeleteSheet(ctx context.Context, userID, sheetID string) error
 }
 
+type ClassProfileService interface {
+	GetClassProfile(ctx context.Context, userID string) (domain.ClassProfile, error)
+	UpdateClassProfile(ctx context.Context, userID string, profile domain.ClassProfile) (domain.ClassProfile, error)
+}
+
 type AuthService interface {
 	Register(ctx context.Context, creds domain.Credentials) (domain.User, string, error)
 	Login(ctx context.Context, creds domain.Credentials) (domain.User, string, error)
@@ -41,6 +46,11 @@ type SheetRepository interface {
 	ListByUser(ctx context.Context, userID string) ([]domain.SavedSheet, error)
 	GetByID(ctx context.Context, userID, sheetID string) (domain.SavedSheet, error)
 	Delete(ctx context.Context, userID, sheetID string) error
+}
+
+type ClassProfileRepository interface {
+	GetByUser(ctx context.Context, userID string) (domain.ClassProfile, error)
+	Upsert(ctx context.Context, userID string, profile domain.ClassProfile) (domain.ClassProfile, error)
 }
 
 type PasswordHasher interface {

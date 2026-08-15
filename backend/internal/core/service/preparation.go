@@ -9,17 +9,25 @@ import (
 )
 
 type Preparation struct {
-	generator port.SheetGenerator
-	sheets    port.SheetRepository
+	generator     port.SheetGenerator
+	sheets        port.SheetRepository
+	classProfiles port.ClassProfileRepository
 }
 
-func New(generator port.SheetGenerator, sheets port.SheetRepository) *Preparation {
-	return &Preparation{generator: generator, sheets: sheets}
+func New(generator port.SheetGenerator, sheets port.SheetRepository, classProfiles port.ClassProfileRepository) *Preparation {
+	return &Preparation{generator: generator, sheets: sheets, classProfiles: classProfiles}
 }
 
 func (p *Preparation) CreateSheet(ctx context.Context, userID string, req domain.CreateRequest) (domain.SavedSheet, error) {
 	clean, err := req.Validate()
 	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+	clean.ClassContext, err = p.classContext(ctx, userID, clean.AdaptToClass)
+	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+	if clean, err = clean.Validate(); err != nil {
 		return domain.SavedSheet{}, err
 	}
 	sheet, err := p.generator.Generate(ctx, buildCreatePrompt(clean), clean.GenerationMode)
@@ -32,6 +40,13 @@ func (p *Preparation) CreateSheet(ctx context.Context, userID string, req domain
 func (p *Preparation) ImproveSheet(ctx context.Context, userID string, req domain.ImproveRequest) (domain.SavedSheet, error) {
 	clean, err := req.Validate()
 	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+	clean.ClassContext, err = p.classContext(ctx, userID, clean.AdaptToClass)
+	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+	if clean, err = clean.Validate(); err != nil {
 		return domain.SavedSheet{}, err
 	}
 	sheet, err := p.generator.Generate(ctx, buildImprovePrompt(clean), clean.GenerationMode)
@@ -58,8 +73,16 @@ func (p *Preparation) ImproveSavedSheet(ctx context.Context, userID, sheetID str
 		AvailableMaterials: req.AvailableMaterials,
 		Resources:          req.Resources,
 		GenerationMode:     req.GenerationMode,
+		AdaptToClass:       req.AdaptToClass,
 	}.Validate()
 	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+	clean.ClassContext, err = p.classContext(ctx, userID, clean.AdaptToClass)
+	if err != nil {
+		return domain.SavedSheet{}, err
+	}
+	if clean, err = clean.Validate(); err != nil {
 		return domain.SavedSheet{}, err
 	}
 	sheet, err := p.generator.Generate(ctx, buildImprovePrompt(clean), clean.GenerationMode)
@@ -119,4 +142,18 @@ func (p *Preparation) DeleteSheet(ctx context.Context, userID, sheetID string) e
 		return err
 	}
 	return nil
+}
+
+func (p *Preparation) classContext(ctx context.Context, userID string, enabled bool) (string, error) {
+	if !enabled || p.classProfiles == nil {
+		return "", nil
+	}
+	profile, err := p.classProfiles.GetByUser(ctx, userID)
+	if err != nil {
+		if errors.Is(err, port.ErrNotFound) {
+			return "", nil
+		}
+		return "", err
+	}
+	return profile.PromptSummary(), nil
 }

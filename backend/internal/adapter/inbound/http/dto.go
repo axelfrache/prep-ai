@@ -31,6 +31,7 @@ type createRequestDTO struct {
 	Period             string        `json:"period"`
 	Notes              string        `json:"notes"`
 	AvailableMaterials string        `json:"availableMaterials"`
+	AdaptToClass       bool          `json:"adaptToClass"`
 	Resources          []documentDTO `json:"resources"`
 	GenerationMode     string        `json:"generationMode"`
 }
@@ -43,6 +44,7 @@ func (r createRequestDTO) toDomain() domain.CreateRequest {
 		Period:             r.Period,
 		Notes:              r.Notes,
 		AvailableMaterials: r.AvailableMaterials,
+		AdaptToClass:       r.AdaptToClass,
 		Resources:          toDomainDocuments(r.Resources),
 		GenerationMode:     domain.GenerationMode(r.GenerationMode),
 	}
@@ -52,6 +54,7 @@ type improveRequestDTO struct {
 	ExistingSheet      documentDTO   `json:"existingSheet"`
 	Notes              string        `json:"notes"`
 	AvailableMaterials string        `json:"availableMaterials"`
+	AdaptToClass       bool          `json:"adaptToClass"`
 	Resources          []documentDTO `json:"resources"`
 	GenerationMode     string        `json:"generationMode"`
 }
@@ -61,6 +64,7 @@ func (r improveRequestDTO) toDomain() domain.ImproveRequest {
 		ExistingSheet:      r.ExistingSheet.toDomain(),
 		Notes:              r.Notes,
 		AvailableMaterials: r.AvailableMaterials,
+		AdaptToClass:       r.AdaptToClass,
 		Resources:          toDomainDocuments(r.Resources),
 		GenerationMode:     domain.GenerationMode(r.GenerationMode),
 	}
@@ -69,6 +73,7 @@ func (r improveRequestDTO) toDomain() domain.ImproveRequest {
 type improveSavedRequestDTO struct {
 	Notes              string        `json:"notes"`
 	AvailableMaterials string        `json:"availableMaterials"`
+	AdaptToClass       bool          `json:"adaptToClass"`
 	Resources          []documentDTO `json:"resources"`
 	GenerationMode     string        `json:"generationMode"`
 	SaveMode           string        `json:"saveMode"`
@@ -78,10 +83,116 @@ func (r improveSavedRequestDTO) toDomain() domain.ImproveSavedRequest {
 	return domain.ImproveSavedRequest{
 		Notes:              r.Notes,
 		AvailableMaterials: r.AvailableMaterials,
+		AdaptToClass:       r.AdaptToClass,
 		Resources:          toDomainDocuments(r.Resources),
 		GenerationMode:     domain.GenerationMode(r.GenerationMode),
 		SaveMode:           domain.SavedSheetSaveMode(r.SaveMode),
 	}
+}
+
+type classProfileDTO struct {
+	Level                  string              `json:"level"`
+	StudentCount           int                 `json:"studentCount"`
+	OverallLevel           string              `json:"overallLevel"`
+	ClassroomContext       string              `json:"classroomContext"`
+	DefaultMaterials       string              `json:"defaultMaterials"`
+	AvoidMaterials         string              `json:"avoidMaterials"`
+	PreferredSupports      []string            `json:"preferredSupports"`
+	DefaultSessionDuration int                 `json:"defaultSessionDuration"`
+	PedagogicalPreferences []string            `json:"pedagogicalPreferences"`
+	NeedGroups             []needGroupDTO      `json:"needGroups"`
+	Students               []studentProfileDTO `json:"students"`
+	UpdatedAt              time.Time           `json:"updatedAt"`
+}
+
+type needGroupDTO struct {
+	Name        string `json:"name"`
+	Needs       string `json:"needs"`
+	Adaptations string `json:"adaptations"`
+}
+
+type studentProfileDTO struct {
+	Name         string `json:"name"`
+	Strengths    string `json:"strengths"`
+	Difficulties string `json:"difficulties"`
+	Needs        string `json:"needs"`
+	Adaptations  string `json:"adaptations"`
+}
+
+func (p classProfileDTO) toDomain() domain.ClassProfile {
+	groups := make([]domain.NeedGroup, len(p.NeedGroups))
+	for i, group := range p.NeedGroups {
+		groups[i] = domain.NeedGroup{
+			Name:        group.Name,
+			Needs:       group.Needs,
+			Adaptations: group.Adaptations,
+		}
+	}
+	students := make([]domain.StudentProfile, len(p.Students))
+	for i, student := range p.Students {
+		students[i] = domain.StudentProfile{
+			Name:         student.Name,
+			Strengths:    student.Strengths,
+			Difficulties: student.Difficulties,
+			Needs:        student.Needs,
+			Adaptations:  student.Adaptations,
+		}
+	}
+	return domain.ClassProfile{
+		Level:                  p.Level,
+		StudentCount:           p.StudentCount,
+		OverallLevel:           p.OverallLevel,
+		ClassroomContext:       p.ClassroomContext,
+		DefaultMaterials:       p.DefaultMaterials,
+		AvoidMaterials:         p.AvoidMaterials,
+		PreferredSupports:      p.PreferredSupports,
+		DefaultSessionDuration: p.DefaultSessionDuration,
+		PedagogicalPreferences: p.PedagogicalPreferences,
+		NeedGroups:             groups,
+		Students:               students,
+	}
+}
+
+func newClassProfileDTO(profile domain.ClassProfile) classProfileDTO {
+	groups := make([]needGroupDTO, len(profile.NeedGroups))
+	for i, group := range profile.NeedGroups {
+		groups[i] = needGroupDTO{
+			Name:        group.Name,
+			Needs:       group.Needs,
+			Adaptations: group.Adaptations,
+		}
+	}
+	students := make([]studentProfileDTO, len(profile.Students))
+	for i, student := range profile.Students {
+		students[i] = studentProfileDTO{
+			Name:         student.Name,
+			Strengths:    student.Strengths,
+			Difficulties: student.Difficulties,
+			Needs:        student.Needs,
+			Adaptations:  student.Adaptations,
+		}
+	}
+	return classProfileDTO{
+		Level:                  profile.Level,
+		StudentCount:           profile.StudentCount,
+		OverallLevel:           profile.OverallLevel,
+		ClassroomContext:       profile.ClassroomContext,
+		DefaultMaterials:       profile.DefaultMaterials,
+		AvoidMaterials:         profile.AvoidMaterials,
+		PreferredSupports:      nonNilStrings(profile.PreferredSupports),
+		DefaultSessionDuration: profile.DefaultSessionDuration,
+		PedagogicalPreferences: nonNilStrings(profile.PedagogicalPreferences),
+		NeedGroups:             groups,
+		Students:               students,
+		UpdatedAt:              profile.UpdatedAt,
+	}
+}
+
+func nonNilStrings(values []string) []string {
+	if values == nil {
+		return []string{}
+	}
+	return values
 }
 
 type sheetDTO struct {

@@ -1,4 +1,4 @@
-import { ChevronDown, LayoutDashboard, LogOut, Settings } from 'lucide-react'
+import { ChevronDown, LayoutDashboard, LogOut, Settings, UsersRound } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
@@ -24,6 +24,7 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { to: '/', labelKey: 'global.home', icon: LayoutDashboard, end: true },
+  { to: '/class', labelKey: 'nav.class', icon: UsersRound },
   { to: '/settings', labelKey: 'nav.settings', icon: Settings },
 ]
 
