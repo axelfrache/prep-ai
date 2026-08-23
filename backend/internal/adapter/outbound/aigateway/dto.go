@@ -1,43 +1,18 @@
-package gemini
+package aigateway
 
 import "github.com/axelfrache/prep-ai/backend/internal/core/domain"
 
-type geminiRequest struct {
-	Contents         []content        `json:"contents"`
-	GenerationConfig generationConfig `json:"generationConfig"`
+type generateRequest struct {
+	Prompt         string         `json:"prompt"`
+	Model          string         `json:"model,omitempty"`
+	Models         []string       `json:"models,omitempty"`
+	ResponseSchema map[string]any `json:"response_schema,omitempty"`
 }
 
-type content struct {
-	Role  string `json:"role"`
-	Parts []part `json:"parts"`
-}
-
-type part struct {
-	Text string `json:"text"`
-}
-
-type generationConfig struct {
-	ResponseMIMEType string         `json:"responseMimeType"`
-	ResponseSchema   map[string]any `json:"responseSchema"`
-}
-
-type geminiResponse struct {
-	Candidates []struct {
-		Content struct {
-			Parts []part `json:"parts"`
-		} `json:"content"`
-	} `json:"candidates"`
-}
-
-func (r geminiResponse) text() string {
-	if len(r.Candidates) == 0 {
-		return ""
-	}
-	out := ""
-	for _, p := range r.Candidates[0].Content.Parts {
-		out += p.Text
-	}
-	return out
+type generateResult struct {
+	Model        string `json:"model"`
+	Text         string `json:"text"`
+	FallbackUsed bool   `json:"fallback_used"`
 }
 
 type sheetWrapper struct {

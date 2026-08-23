@@ -23,10 +23,11 @@ services:
         condition: service_healthy
     environment:
       PORT: "8080"
-      GEMINI_API_KEY: ${GEMINI_API_KEY:?Définissez GEMINI_API_KEY dans un fichier .env}
-      GEMINI_DEFAULT_MODEL: ${GEMINI_DEFAULT_MODEL:-gemini-3.5-flash-lite}
-      GEMINI_ADVANCED_MODEL: ${GEMINI_ADVANCED_MODEL:-gemini-3.6-flash}
-      GEMINI_FALLBACK_MODEL: ${GEMINI_FALLBACK_MODEL:-gemini-3.1-flash-lite}
+      AI_GATEWAY_URL: ${AI_GATEWAY_URL:?Définissez AI_GATEWAY_URL dans un fichier .env}
+      AI_GATEWAY_API_KEY: ${AI_GATEWAY_API_KEY:?Définissez AI_GATEWAY_API_KEY dans un fichier .env}
+      AI_GATEWAY_DEFAULT_MODEL: ${AI_GATEWAY_DEFAULT_MODEL:-ai-gateway:json}
+      AI_GATEWAY_ADVANCED_MODEL: ${AI_GATEWAY_ADVANCED_MODEL:-gemini:gemini-3.6-flash}
+      AI_GATEWAY_ADVANCED_FALLBACK_MODEL: ${AI_GATEWAY_ADVANCED_FALLBACK_MODEL:-}
       DATABASE_URL: postgres://${POSTGRES_USER:-prepai}:${POSTGRES_PASSWORD:-prepai}@db:5432/${POSTGRES_DB:-prepai}?sslmode=disable
       JWT_SECRET: ${JWT_SECRET:?Définissez JWT_SECRET dans un fichier .env}
       JWT_TTL: ${JWT_TTL:-24h}

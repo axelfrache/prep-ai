@@ -11,7 +11,7 @@ import (
 	"time"
 
 	httpadapter "github.com/axelfrache/prep-ai/backend/internal/adapter/inbound/http"
-	"github.com/axelfrache/prep-ai/backend/internal/adapter/outbound/gemini"
+	"github.com/axelfrache/prep-ai/backend/internal/adapter/outbound/aigateway"
 	"github.com/axelfrache/prep-ai/backend/internal/adapter/outbound/postgres"
 	"github.com/axelfrache/prep-ai/backend/internal/adapter/outbound/security"
 	"github.com/axelfrache/prep-ai/backend/internal/config"
@@ -21,8 +21,8 @@ import (
 func main() {
 	cfg := config.Load()
 
-	if cfg.GeminiAPIKey == "" {
-		log.Println("warning: GEMINI_API_KEY is not set; generation will fail.")
+	if cfg.AIGatewayAPIKey == "" {
+		log.Println("warning: AI_GATEWAY_API_KEY is not set; generation will fail.")
 	}
 
 	ctx := context.Background()
@@ -39,11 +39,12 @@ func main() {
 	users := postgres.NewUserRepository(pool)
 	sheets := postgres.NewSheetRepository(pool)
 	classProfiles := postgres.NewClassProfileRepository(pool)
-	generator := gemini.New(
-		cfg.GeminiAPIKey,
-		cfg.GeminiDefaultModel,
-		cfg.GeminiAdvancedModel,
-		cfg.GeminiFallbackModel,
+	generator := aigateway.New(
+		cfg.AIGatewayURL,
+		cfg.AIGatewayAPIKey,
+		cfg.AIGatewayDefaultModel,
+		cfg.AIGatewayAdvancedModel,
+		cfg.AIGatewayAdvancedFallbackModel,
 	)
 	hasher := security.NewBcryptHasher()
 	tokens := security.NewJWTService(cfg.JWTSecret, cfg.JWTTTL)

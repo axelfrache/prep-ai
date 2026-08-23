@@ -1,4 +1,4 @@
-package gemini
+package aigateway
 
 var responseSchema = map[string]any{
 	"type": "object",
