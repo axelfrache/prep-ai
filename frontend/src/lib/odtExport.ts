@@ -4,10 +4,11 @@ import {
   downloadBlob,
   escapeXml,
   groupPhaseBlocks,
-  mergedGuidanceText,
+  guidanceSections,
   sheetFilename,
   sheetList,
 } from '@/lib/exportUtils'
+import type { GuidanceSection } from '@/lib/exportUtils'
 import type { PreparationSheet } from '@/types/preparation'
 
 export async function exportSheetToOdt(sheet: PreparationSheet): Promise<void> {
@@ -39,6 +40,9 @@ function contentXml(sheet: PreparationSheet): string {
       </style:style>
       <style:style style:name="BodyCell" style:family="table-cell">
         <style:table-cell-properties fo:padding="0.08in" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"/>
+      </style:style>
+      <style:style style:name="Bold" style:family="text">
+        <style:text-properties fo:font-weight="bold" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"/>
       </style:style>
     </office:automatic-styles>
     <office:body>
@@ -76,7 +80,7 @@ function phaseTable(sheet: PreparationSheet): string {
       cell(`${phase.name}\n${phase.durationMinutes} min`),
       cell(phase.organization),
       cell(blocks.instructions),
-      cell(mergedGuidanceText(blocks)),
+      guidanceCell(guidanceSections(blocks)),
     ])
   })
   return table([header, ...rows])
@@ -95,6 +99,17 @@ function cell(value: string, header = false): string {
     .split(/\r?\n/)
     .map((line) => `<text:p>${escapeXml(line)}</text:p>`)
   return `<table:table-cell table:style-name="${header ? 'HeaderCell' : 'BodyCell'}" office:value-type="string">${paragraphs.join('')}</table:table-cell>`
+}
+
+function guidanceCell(sections: GuidanceSection[]): string {
+  if (sections.length === 0) {
+    return cell('')
+  }
+  const paragraphs = sections.flatMap((section) => [
+    `<text:p><text:span text:style-name="Bold">${escapeXml(section.label)}</text:span></text:p>`,
+    ...section.content.split(/\r?\n/).map((line) => `<text:p>${escapeXml(line)}</text:p>`),
+  ])
+  return `<table:table-cell table:style-name="BodyCell" office:value-type="string">${paragraphs.join('')}</table:table-cell>`
 }
 
 function stylesXml(): string {

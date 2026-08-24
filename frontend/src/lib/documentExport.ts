@@ -4,11 +4,12 @@ import {
   downloadBlob,
   escapeXml,
   groupPhaseBlocks,
-  mergedGuidanceText,
+  guidanceSections,
   sheetFilename,
   sheetList,
   xmlHeader,
 } from '@/lib/exportUtils'
+import type { GuidanceSection } from '@/lib/exportUtils'
 import type { PreparationSheet } from '@/types/preparation'
 
 type CellOptions = {
@@ -100,7 +101,7 @@ function phaseTable(sheet: PreparationSheet): string {
       tableCell(`${phase.name}\n${phase.durationMinutes} min`, { width: phaseColumnWidths[0] }),
       tableCell(phase.organization, { width: phaseColumnWidths[1] }),
       tableCell(blocks.instructions, { width: phaseColumnWidths[2] }),
-      tableCell(mergedGuidanceText(blocks), { width: phaseColumnWidths[3] }),
+      guidanceCell(guidanceSections(blocks), phaseColumnWidths[3]),
     ])
   })
   return table([header, ...rows], phaseColumnWidths)
@@ -154,6 +155,30 @@ function tableCell(value: string, options: CellOptions = {}): string {
       ${fill}
     </w:tcPr>
     ${paragraphs.join('')}
+  </w:tc>`
+}
+
+function guidanceCell(sections: GuidanceSection[], width: number): string {
+  const sectionParagraphs = (section: GuidanceSection) =>
+    [
+      paragraph(section.label, { bold: true, fontSize: 20, spacingAfter: 0 }),
+      ...splitLines(section.content).map((line) =>
+        paragraph(line || ' ', { fontSize: 20, spacingAfter: 0 }),
+      ),
+    ].join('')
+
+  const spacer = paragraph(' ', { fontSize: 20, spacingAfter: 0 })
+  const body =
+    sections.length > 0
+      ? sections.map(sectionParagraphs).join(spacer)
+      : paragraph(' ', { fontSize: 20, spacingAfter: 0 })
+
+  return `<w:tc>
+    <w:tcPr>
+      <w:tcW w:w="${width}" w:type="dxa"/>
+      <w:vAlign w:val="top"/>
+    </w:tcPr>
+    ${body}
   </w:tc>`
 }
 
