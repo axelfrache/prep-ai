@@ -18,6 +18,18 @@ func New(generator port.SheetGenerator, sheets port.SheetRepository, classProfil
 	return &Preparation{generator: generator, sheets: sheets, classProfiles: classProfiles}
 }
 
+func (p *Preparation) CreateProgrammation(ctx context.Context, req domain.CreateProgrammationRequest) (domain.ProgrammationSheet, error) {
+	if req.Subject == "" || req.Level == "" {
+		return domain.ProgrammationSheet{}, errors.New("invalid request")
+	}
+	prompt := buildCreateProgrammationPrompt(req)
+	sheet, err := p.generator.GenerateProgrammation(ctx, prompt)
+	if err != nil {
+		return domain.ProgrammationSheet{}, err
+	}
+	return sheet, nil
+}
+
 func (p *Preparation) CreateSheet(ctx context.Context, userID string, req domain.CreateRequest) (domain.SavedSheet, error) {
 	clean, err := req.Validate()
 	if err != nil {

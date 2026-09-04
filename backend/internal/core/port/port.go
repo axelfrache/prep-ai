@@ -14,6 +14,7 @@ type PreparationService interface {
 	GetSheet(ctx context.Context, userID, sheetID string) (domain.SavedSheet, error)
 	UpdateSheet(ctx context.Context, userID, sheetID string, sheet domain.Sheet) (domain.SavedSheet, error)
 	DeleteSheet(ctx context.Context, userID, sheetID string) error
+	CreateProgrammation(ctx context.Context, req domain.CreateProgrammationRequest) (domain.ProgrammationSheet, error)
 }
 
 type ClassProfileService interface {
@@ -31,6 +32,7 @@ type AuthService interface {
 
 type SheetGenerator interface {
 	Generate(ctx context.Context, prompt string, mode domain.GenerationMode) (domain.Sheet, error)
+	GenerateProgrammation(ctx context.Context, prompt string) (domain.ProgrammationSheet, error)
 }
 
 type UserRepository interface {

@@ -354,3 +354,79 @@ func newAuthResponse(user domain.User, token string) authResponseDTO {
 		User:  newUserDTO(user),
 	}
 }
+
+type createProgrammationRequestDTO struct {
+	Subject   string        `json:"subject"`
+	Level     string        `json:"level"`
+	Notes     string        `json:"notes"`
+	Resources []documentDTO `json:"resources"`
+}
+
+func (r createProgrammationRequestDTO) toDomain() domain.CreateProgrammationRequest {
+	return domain.CreateProgrammationRequest{
+		Subject:   r.Subject,
+		Level:     r.Level,
+		Notes:     r.Notes,
+		Resources: toDomainDocuments(r.Resources),
+	}
+}
+
+type programmationResultDTO struct {
+	Programmation programmationSheetDTO `json:"programmation"`
+}
+
+type programmationSheetDTO struct {
+	Title   string                `json:"title"`
+	Subject string                `json:"subject"`
+	Level   string                `json:"level"`
+	Periods []programmationPeriod `json:"periods"`
+}
+
+type programmationPeriod struct {
+	Name      string                  `json:"name"`
+	Theme     string                  `json:"theme"`
+	Sequences []programmationSequence `json:"sequences"`
+}
+
+type programmationSequence struct {
+	Title        string                 `json:"title"`
+	Theme        string                 `json:"theme"`
+	Competencies []string               `json:"competencies"`
+	Sessions     []programmationSession `json:"sessions"`
+}
+
+type programmationSession struct {
+	Name string `json:"name"`
+}
+
+func newProgrammationResultDTO(sheet domain.ProgrammationSheet) programmationResultDTO {
+	periods := make([]programmationPeriod, len(sheet.Periods))
+	for i, p := range sheet.Periods {
+		sequences := make([]programmationSequence, len(p.Sequences))
+		for j, seq := range p.Sequences {
+			sessions := make([]programmationSession, len(seq.Sessions))
+			for k, ses := range seq.Sessions {
+				sessions[k] = programmationSession{Name: ses.Name}
+			}
+			sequences[j] = programmationSequence{
+				Title:        seq.Title,
+				Theme:        seq.Theme,
+				Competencies: seq.Competencies,
+				Sessions:     sessions,
+			}
+		}
+		periods[i] = programmationPeriod{
+			Name:      p.Name,
+			Theme:     p.Theme,
+			Sequences: sequences,
+		}
+	}
+	return programmationResultDTO{
+		Programmation: programmationSheetDTO{
+			Title:   sheet.Title,
+			Subject: sheet.Subject,
+			Level:   sheet.Level,
+			Periods: periods,
+		},
+	}
+}

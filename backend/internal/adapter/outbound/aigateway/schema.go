@@ -47,3 +47,55 @@ var responseSchema = map[string]any{
 	},
 	"required": []string{"sheet"},
 }
+
+var programmationSchema = map[string]any{
+	"type": "object",
+	"properties": map[string]any{
+		"programmation": map[string]any{
+			"type": "object",
+			"properties": map[string]any{
+				"title":   map[string]any{"type": "string"},
+				"subject": map[string]any{"type": "string"},
+				"level":   map[string]any{"type": "string"},
+				"periods": map[string]any{
+					"type":     "array",
+					"minItems": 1,
+					"items": map[string]any{
+						"type": "object",
+						"properties": map[string]any{
+							"name":  map[string]any{"type": "string"},
+							"theme": map[string]any{"type": "string"},
+							"sequences": map[string]any{
+								"type":     "array",
+								"minItems": 1,
+								"items": map[string]any{
+									"type": "object",
+									"properties": map[string]any{
+										"title":        map[string]any{"type": "string"},
+										"theme":        map[string]any{"type": "string"},
+										"competencies": map[string]any{"type": "array", "items": map[string]any{"type": "string"}},
+										"sessions": map[string]any{
+											"type":     "array",
+											"minItems": 1,
+											"items": map[string]any{
+												"type": "object",
+												"properties": map[string]any{
+													"name": map[string]any{"type": "string"},
+												},
+												"required": []string{"name"},
+											},
+										},
+									},
+									"required": []string{"title", "competencies", "sessions"},
+								},
+							},
+						},
+						"required": []string{"name", "sequences"},
+					},
+				},
+			},
+			"required": []string{"title", "subject", "level", "periods"},
+		},
+	},
+	"required": []string{"programmation"},
+}

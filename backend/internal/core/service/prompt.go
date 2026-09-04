@@ -11,6 +11,9 @@ import (
 //go:embed prompts/create.md
 var createSystemPrompt string
 
+//go:embed prompts/create-programmation.md
+var createProgrammationSystemPrompt string
+
 const jsonContract = `==================================================
 MANDATORY JSON FORMAT FOR THE APPLICATION
 ==================================================
@@ -206,4 +209,47 @@ func blockLabel(blockType domain.BlockType) string {
 	default:
 		return "Instruction"
 	}
+}
+
+func buildCreateProgrammationPrompt(req domain.CreateProgrammationRequest) string {
+	var b strings.Builder
+	b.WriteString(createProgrammationSystemPrompt)
+	b.WriteString("\n\n==================================================\n")
+	b.WriteString("FORMAT JSON OBLIGATOIRE POUR L'APPLICATION\n")
+	b.WriteString("==================================================\n\n")
+	b.WriteString(`Réponds uniquement avec ce JSON structuré :
+
+{
+  "programmation": {
+    "title": "...",
+    "subject": "...",
+    "level": "...",
+    "periods": [
+      {
+        "name": "Période 1",
+        "theme": "Thème optionnel",
+        "sequences": [
+          {
+            "title": "Séquence 1...",
+            "theme": "Sous-thème optionnel",
+            "competencies": ["Compétence 1..."],
+            "sessions": [
+              { "name": "Séance 1 : ..." }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}`)
+	b.WriteString("\n\n==================================================\n")
+	b.WriteString("INFORMATIONS DYNAMIQUES\n")
+	b.WriteString("==================================================\n\n")
+	fmt.Fprintf(&b, "Matière / Domaine : %s\n", req.Subject)
+	fmt.Fprintf(&b, "Niveau : %s\n", req.Level)
+	b.WriteString(optionalLine("Remarques", "Remarques : aucune", req.Notes))
+	b.WriteString("\nRessources :\n")
+	b.WriteString(formatResources(req.Resources))
+	b.WriteString("\n")
+	return b.String()
 }

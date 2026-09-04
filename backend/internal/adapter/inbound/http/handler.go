@@ -35,6 +35,21 @@ func (h *Handler) Create(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 	writeJSON(w, stdhttp.StatusOK, newSavedSheetDTO(saved))
 }
 
+func (h *Handler) CreateProgrammation(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	var dto createProgrammationRequestDTO
+	if err := decodeJSON(w, r, &dto); err != nil {
+		writeError(w, err)
+		return
+	}
+
+	sheet, err := h.service.CreateProgrammation(r.Context(), dto.toDomain())
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, stdhttp.StatusOK, newProgrammationResultDTO(sheet))
+}
+
 func (h *Handler) Improve(w stdhttp.ResponseWriter, r *stdhttp.Request) {
 	var dto improveRequestDTO
 	if err := decodeJSON(w, r, &dto); err != nil {

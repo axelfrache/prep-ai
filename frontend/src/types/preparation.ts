@@ -129,3 +129,38 @@ export type UpdateProfilePayload = {
   email: string
   password?: string
 }
+
+export type ProgrammationSession = {
+  name: string
+}
+
+export type ProgrammationSequence = {
+  title: string
+  theme?: string
+  competencies: string[]
+  sessions: ProgrammationSession[]
+}
+
+export type ProgrammationPeriod = {
+  name: string
+  theme?: string
+  sequences: ProgrammationSequence[]
+}
+
+export type ProgrammationSheet = {
+  title: string
+  subject: string
+  level: string
+  periods: ProgrammationPeriod[]
+}
+
+export type ProgrammationResult = {
+  programmation: ProgrammationSheet
+}
+
+export type CreateProgrammationPayload = {
+  subject: string
+  level: string
+  resources: ExtractedDocument[]
+  notes?: string
+}

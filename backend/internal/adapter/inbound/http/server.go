@@ -24,6 +24,7 @@ func NewRouter(prep port.PreparationService, auth port.AuthService, classProfile
 	mux.Handle("GET /api/class-profile", protected(stdhttp.HandlerFunc(classProfileHandler.Get)))
 	mux.Handle("PATCH /api/class-profile", protected(stdhttp.HandlerFunc(classProfileHandler.Update)))
 	mux.Handle("POST /api/create", protected(stdhttp.HandlerFunc(handler.Create)))
+	mux.Handle("POST /api/create-programmation", protected(stdhttp.HandlerFunc(handler.CreateProgrammation)))
 	mux.Handle("POST /api/improve", protected(stdhttp.HandlerFunc(handler.Improve)))
 	mux.Handle("GET /api/sheets", protected(stdhttp.HandlerFunc(handler.ListSheets)))
 	mux.Handle("GET /api/sheets/{id}", protected(stdhttp.HandlerFunc(handler.GetSheet)))

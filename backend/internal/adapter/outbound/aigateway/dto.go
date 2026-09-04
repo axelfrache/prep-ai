@@ -67,3 +67,61 @@ func (s sheetDTO) toDomain() domain.Sheet {
 		Phases:          phases,
 	}
 }
+
+type programmationWrapper struct {
+	Programmation programmationDTO `json:"programmation"`
+}
+
+type programmationDTO struct {
+	Title   string                `json:"title"`
+	Subject string                `json:"subject"`
+	Level   string                `json:"level"`
+	Periods []programmationPeriod `json:"periods"`
+}
+
+type programmationPeriod struct {
+	Name      string                  `json:"name"`
+	Theme     string                  `json:"theme"`
+	Sequences []programmationSequence `json:"sequences"`
+}
+
+type programmationSequence struct {
+	Title        string                 `json:"title"`
+	Theme        string                 `json:"theme"`
+	Competencies []string               `json:"competencies"`
+	Sessions     []programmationSession `json:"sessions"`
+}
+
+type programmationSession struct {
+	Name string `json:"name"`
+}
+
+func (s programmationDTO) toDomain() domain.ProgrammationSheet {
+	periods := make([]domain.ProgrammationPeriod, len(s.Periods))
+	for i, p := range s.Periods {
+		sequences := make([]domain.ProgrammationSequence, len(p.Sequences))
+		for j, seq := range p.Sequences {
+			sessions := make([]domain.ProgrammationSession, len(seq.Sessions))
+			for k, ses := range seq.Sessions {
+				sessions[k] = domain.ProgrammationSession{Name: ses.Name}
+			}
+			sequences[j] = domain.ProgrammationSequence{
+				Title:        seq.Title,
+				Theme:        seq.Theme,
+				Competencies: seq.Competencies,
+				Sessions:     sessions,
+			}
+		}
+		periods[i] = domain.ProgrammationPeriod{
+			Name:      p.Name,
+			Theme:     p.Theme,
+			Sequences: sequences,
+		}
+	}
+	return domain.ProgrammationSheet{
+		Title:   s.Title,
+		Subject: s.Subject,
+		Level:   s.Level,
+		Periods: periods,
+	}
+}

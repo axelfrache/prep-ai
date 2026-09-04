@@ -154,3 +154,9 @@ async function readBackendError(response: Response): Promise<string> {
     return ''
   }
 }
+
+export function createProgrammation(
+  payload: import('@/types/preparation').CreateProgrammationPayload,
+): Promise<import('@/types/preparation').ProgrammationResult> {
+  return request('/api/create-programmation', { method: 'POST', body: JSON.stringify(payload) })
+}

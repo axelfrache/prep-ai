@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowRight, PlusCircle, Sparkles } from 'lucide-react'
+import { ArrowRight, PlusCircle, Sparkles, CalendarDays } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { SheetList } from '@/components/SheetList'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -7,6 +7,12 @@ import { PageError } from '@/components/PageError'
 import { useI18n, type TranslationKey } from '@/lib/i18n'
 
 const actions = [
+  {
+    to: '/programmation',
+    icon: CalendarDays,
+    titleKey: 'programmation.title',
+    descriptionKey: 'home.programmationDescription',
+  },
   {
     to: '/create',
     icon: PlusCircle,

@@ -26,6 +26,10 @@ const translations = {
     'action.exportWord': 'Word',
     'action.improve': 'Améliorer',
     'action.preview': 'Aperçu',
+    'programmation.title': 'Créer une programmation',
+    'programmation.description':
+      "Générez une programmation à l'année à partir de vos progressions.",
+    'home.programmationDescription': "Générer une programmation à l'année.",
     'advanced.aria': 'Activer le raisonnement avancé',
     'advanced.description':
       'Utilise Gemini 3.6 Flash pour un meilleur rendu. Les quotas sont plus limités.',
@@ -280,6 +284,9 @@ const translations = {
     'action.exportWord': 'Word',
     'action.improve': 'Improve',
     'action.preview': 'Preview',
+    'programmation.title': 'Create a yearly plan',
+    'programmation.description': 'Generate a yearly plan from your progressions.',
+    'home.programmationDescription': 'Generate a yearly plan.',
     'advanced.aria': 'Enable advanced reasoning',
     'advanced.description': 'Uses Gemini 3.6 Flash for better output. Quotas are more limited.',
     'advanced.title': 'Advanced reasoning',

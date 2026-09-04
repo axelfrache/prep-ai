@@ -198,3 +198,77 @@ func readAPIError(raw []byte) string {
 	}
 	return msg
 }
+
+func (c *Client) GenerateProgrammation(ctx context.Context, prompt string) (domain.ProgrammationSheet, error) {
+	if c.apiKey == "" {
+		return domain.ProgrammationSheet{}, domain.NewGenerationError(http.StatusInternalServerError,
+			"AI Gateway API key is not configured on the server.")
+	}
+
+	payload := generateRequest{
+		Prompt:         prompt,
+		ResponseSchema: programmationSchema,
+		Model:          c.advancedModel,
+	}
+
+	body, err := json.Marshal(payload)
+	if err != nil {
+		return domain.ProgrammationSheet{}, domain.NewGenerationError(http.StatusInternalServerError,
+			"Unable to prepare the generation request.")
+	}
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.baseURL+"/v1/generate", bytes.NewReader(body))
+	if err != nil {
+		return domain.ProgrammationSheet{}, domain.NewGenerationError(http.StatusInternalServerError,
+			"Unable to prepare the generation request.")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
+
+	resp, err := c.http.Do(req)
+	if err != nil {
+		return domain.ProgrammationSheet{}, domain.NewGenerationError(http.StatusBadGateway,
+			"The generation service is currently unreachable.")
+	}
+	defer resp.Body.Close()
+
+	raw, _ := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return domain.ProgrammationSheet{}, c.httpError(resp.StatusCode, raw)
+	}
+
+	return decodeProgrammation(raw)
+}
+
+func decodeProgrammation(raw []byte) (domain.ProgrammationSheet, error) {
+	var result generateResult
+	if err := json.Unmarshal(raw, &result); err != nil {
+		return domain.ProgrammationSheet{}, domain.NewGenerationError(http.StatusBadGateway,
+			"AI Gateway returned an unreadable response.")
+	}
+
+	if result.Text == "" {
+		return domain.ProgrammationSheet{}, domain.NewGenerationError(http.StatusBadGateway,
+			"AI Gateway returned an empty response.")
+	}
+
+	var wrapper programmationWrapper
+	if err := json.Unmarshal([]byte(result.Text), &wrapper); err != nil {
+		match := jsonObjectRe.FindString(result.Text)
+		if match == "" {
+			return domain.ProgrammationSheet{}, domain.NewGenerationError(http.StatusBadGateway,
+				"AI Gateway returned a non-JSON response.")
+		}
+		if err := json.Unmarshal([]byte(match), &wrapper); err != nil {
+			return domain.ProgrammationSheet{}, domain.NewGenerationError(http.StatusBadGateway,
+				"AI Gateway returned an unreadable JSON response.")
+		}
+	}
+
+	sheet := wrapper.Programmation.toDomain()
+	if !sheet.Valid() {
+		return domain.ProgrammationSheet{}, domain.NewGenerationError(http.StatusBadGateway,
+			"AI Gateway returned an invalid JSON response.")
+	}
+	return sheet, nil
+}
