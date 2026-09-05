@@ -5,12 +5,18 @@ import {
   escapeXml,
   groupPhaseBlocks,
   guidanceExchanges,
+  numberedList,
   sheetFilename,
   sheetList,
   xmlHeader,
 } from '@/lib/exportUtils'
 import type { GuidanceExchange } from '@/lib/exportUtils'
-import type { PreparationSheet } from '@/types/preparation'
+import type {
+  PreparationSheet,
+  ProgrammationPeriod,
+  ProgrammationSequence,
+  ProgrammationSheet,
+} from '@/types/preparation'
 
 type CellOptions = {
   header?: boolean
@@ -28,6 +34,7 @@ type ParagraphOptions = {
 const contentWidth = 15400
 const metaColumnWidths = [2500, contentWidth - 2500]
 const phaseColumnWidths = [2600, 1900, 5200, 5700]
+const programmationColumnWidths = [4200, 5200, 6000]
 
 export async function exportSheetToDocx(sheet: PreparationSheet): Promise<void> {
   const zip = new JSZip()
@@ -44,6 +51,23 @@ export async function exportSheetToDocx(sheet: PreparationSheet): Promise<void> 
     mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   })
   downloadBlob(blob, sheetFilename(sheet, 'docx'))
+}
+
+export async function exportProgrammationToDocx(programmation: ProgrammationSheet): Promise<void> {
+  const zip = new JSZip()
+
+  zip.file('[Content_Types].xml', docxContentTypesXml())
+  zip.folder('_rels')?.file('.rels', docxRootRelsXml())
+  const word = zip.folder('word')
+  word?.file('document.xml', programmationDocumentXml(programmation))
+  word?.file('styles.xml', docxStylesXml())
+  word?.folder('_rels')?.file('document.xml.rels', docxDocumentRelsXml())
+
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  })
+  downloadBlob(blob, sheetFilename(programmation, 'docx'))
 }
 
 function docxDocumentXml(sheet: PreparationSheet): string {
@@ -105,6 +129,72 @@ function phaseTable(sheet: PreparationSheet): string {
     ])
   })
   return table([header, ...rows], phaseColumnWidths)
+}
+
+function programmationDocumentXml(programmation: ProgrammationSheet): string {
+  return xmlHeader(
+    `<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+      <w:body>
+        ${paragraph(programmation.title, { style: 'Title' })}
+        ${programmationMetaTable(programmation)}
+        ${programmation.periods.map(periodSection).join('')}
+        <w:sectPr>
+          <w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/>
+          <w:pgMar w:top="720" w:right="720" w:bottom="720" w:left="720" w:header="360" w:footer="360" w:gutter="0"/>
+        </w:sectPr>
+      </w:body>
+    </w:document>`,
+  )
+}
+
+function programmationMetaTable(programmation: ProgrammationSheet): string {
+  const rows = [
+    [translateCurrent('create.subject'), programmation.subject],
+    [translateCurrent('create.level'), programmation.level],
+  ]
+  return table(
+    rows.map(([label, value]) =>
+      tableRow([
+        tableCell(label, { label: true, width: metaColumnWidths[0] }),
+        tableCell(value, { width: metaColumnWidths[1] }),
+      ]),
+    ),
+    metaColumnWidths,
+  )
+}
+
+function periodSection(period: ProgrammationPeriod): string {
+  const heading = period.theme ? `${period.name} — ${period.theme}` : period.name
+  return `${paragraph(heading, { style: 'Heading1' })}${sequenceTable(period.sequences)}`
+}
+
+function sequenceTable(sequences: ProgrammationSequence[]): string {
+  const header = tableRow([
+    tableCell(translateCurrent('programmation.sequence'), {
+      header: true,
+      width: programmationColumnWidths[0],
+    }),
+    tableCell(translateCurrent('sheet.skills'), {
+      header: true,
+      width: programmationColumnWidths[1],
+    }),
+    tableCell(translateCurrent('programmation.sessions'), {
+      header: true,
+      width: programmationColumnWidths[2],
+    }),
+  ])
+  const rows = sequences.map((seq) =>
+    tableRow([
+      tableCell(seq.theme ? `${seq.title}\n${seq.theme}` : seq.title, {
+        width: programmationColumnWidths[0],
+      }),
+      tableCell(sheetList(seq.competencies), { width: programmationColumnWidths[1] }),
+      tableCell(numberedList(seq.sessions.map((session) => session.name)), {
+        width: programmationColumnWidths[2],
+      }),
+    ]),
+  )
+  return table([header, ...rows], programmationColumnWidths)
 }
 
 function table(rows: string[], columnWidths: number[]): string {

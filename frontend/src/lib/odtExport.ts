@@ -5,11 +5,17 @@ import {
   escapeXml,
   groupPhaseBlocks,
   guidanceExchanges,
+  numberedList,
   sheetFilename,
   sheetList,
 } from '@/lib/exportUtils'
 import type { GuidanceExchange } from '@/lib/exportUtils'
-import type { PreparationSheet } from '@/types/preparation'
+import type {
+  PreparationSheet,
+  ProgrammationPeriod,
+  ProgrammationSequence,
+  ProgrammationSheet,
+} from '@/types/preparation'
 
 export async function exportSheetToOdt(sheet: PreparationSheet): Promise<void> {
   const zip = new JSZip()
@@ -26,15 +32,23 @@ export async function exportSheetToOdt(sheet: PreparationSheet): Promise<void> {
   downloadBlob(blob, sheetFilename(sheet, 'odt'))
 }
 
-function contentXml(sheet: PreparationSheet): string {
-  return `<?xml version="1.0" encoding="UTF-8"?>
-  <office:document-content
-    xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
-    xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
-    xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
-    xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
-    office:version="1.3">
-    <office:automatic-styles>
+export async function exportProgrammationToOdt(programmation: ProgrammationSheet): Promise<void> {
+  const zip = new JSZip()
+  zip.file('mimetype', 'application/vnd.oasis.opendocument.text', { compression: 'STORE' })
+  zip.file('content.xml', programmationContentXml(programmation))
+  zip.file('styles.xml', stylesXml())
+  zip.file('meta.xml', metaXml())
+  zip.file('META-INF/manifest.xml', manifestXml())
+
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    mimeType: 'application/vnd.oasis.opendocument.text',
+  })
+  downloadBlob(blob, sheetFilename(programmation, 'odt'))
+}
+
+function automaticStylesXml(): string {
+  return `<office:automatic-styles>
       <style:style style:name="HeaderCell" style:family="table-cell">
         <style:table-cell-properties style:background-color="#eaf2ff" fo:padding="0.08in" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"/>
       </style:style>
@@ -44,7 +58,18 @@ function contentXml(sheet: PreparationSheet): string {
       <style:style style:name="Bold" style:family="text">
         <style:text-properties fo:font-weight="bold" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"/>
       </style:style>
-    </office:automatic-styles>
+    </office:automatic-styles>`
+}
+
+function contentXml(sheet: PreparationSheet): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+  <office:document-content
+    xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+    xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+    xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+    xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
+    office:version="1.3">
+    ${automaticStylesXml()}
     <office:body>
       <office:text>
         <text:h text:outline-level="1">${escapeXml(sheet.title)}</text:h>
@@ -54,6 +79,54 @@ function contentXml(sheet: PreparationSheet): string {
       </office:text>
     </office:body>
   </office:document-content>`
+}
+
+function programmationContentXml(programmation: ProgrammationSheet): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>
+  <office:document-content
+    xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0"
+    xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0"
+    xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0"
+    xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"
+    office:version="1.3">
+    ${automaticStylesXml()}
+    <office:body>
+      <office:text>
+        <text:h text:outline-level="1">${escapeXml(programmation.title)}</text:h>
+        ${programmationMetaTable(programmation)}
+        ${programmation.periods.map(periodSection).join('')}
+      </office:text>
+    </office:body>
+  </office:document-content>`
+}
+
+function programmationMetaTable(programmation: ProgrammationSheet): string {
+  const rows = [
+    [translateCurrent('create.subject'), programmation.subject],
+    [translateCurrent('create.level'), programmation.level],
+  ]
+  return table(rows.map(([label, value]) => row([cell(label, true), cell(value)])))
+}
+
+function periodSection(period: ProgrammationPeriod): string {
+  const heading = period.theme ? `${period.name} — ${period.theme}` : period.name
+  return `<text:h text:outline-level="2">${escapeXml(heading)}</text:h>${sequenceTable(period.sequences)}`
+}
+
+function sequenceTable(sequences: ProgrammationSequence[]): string {
+  const header = row([
+    cell(translateCurrent('programmation.sequence'), true),
+    cell(translateCurrent('sheet.skills'), true),
+    cell(translateCurrent('programmation.sessions'), true),
+  ])
+  const rows = sequences.map((seq) =>
+    row([
+      cell(seq.theme ? `${seq.title}\n${seq.theme}` : seq.title),
+      cell(sheetList(seq.competencies)),
+      cell(numberedList(seq.sessions.map((session) => session.name))),
+    ]),
+  )
+  return table([header, ...rows])
 }
 
 function metaTable(sheet: PreparationSheet): string {

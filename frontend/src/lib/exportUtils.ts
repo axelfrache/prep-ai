@@ -1,5 +1,5 @@
 import { translateCurrent } from '@/lib/i18n'
-import type { PreparationBlock, PreparationSheet } from '@/types/preparation'
+import type { PreparationBlock } from '@/types/preparation'
 
 export type BlockGroup = {
   instructions: string
@@ -13,14 +13,18 @@ export type GuidanceExchange = {
   answer: string
 }
 
-export function sheetFilename(sheet: PreparationSheet, extension: string): string {
-  return `${slugify(sheet.title || 'preparation-sheet')}.${extension}`
+export function sheetFilename(item: { title: string }, extension: string): string {
+  return `${slugify(item.title || 'preparation-sheet')}.${extension}`
 }
 
 export function sheetList(items: string[]): string {
   return items.length > 0
     ? items.map((item) => `- ${item}`).join('\n')
     : translateCurrent('sheet.notSpecified')
+}
+
+export function numberedList(items: string[]): string {
+  return items.map((item, index) => `${index + 1}. ${item}`).join('\n')
 }
 
 export function groupPhaseBlocks(blocks: PreparationBlock[]): BlockGroup {

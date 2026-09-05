@@ -4,11 +4,12 @@ import {
   downloadBlob,
   escapeXml,
   groupPhaseBlocks,
+  numberedList,
   sheetFilename,
   sheetList,
   xmlHeader,
 } from '@/lib/exportUtils'
-import type { PreparationBlock, PreparationSheet } from '@/types/preparation'
+import type { PreparationBlock, PreparationSheet, ProgrammationSheet } from '@/types/preparation'
 
 type CellValue = string | number
 type StyledCell = { value: CellValue; style?: number }
@@ -37,6 +38,24 @@ export async function exportSheetToXlsx(sheet: PreparationSheet): Promise<void> 
     mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   })
   downloadBlob(blob, sheetFilename(sheet, 'xlsx'))
+}
+
+export async function exportProgrammationToXlsx(programmation: ProgrammationSheet): Promise<void> {
+  const zip = new JSZip()
+
+  zip.file('[Content_Types].xml', contentTypesXml())
+  zip.folder('_rels')?.file('.rels', rootRelsXml())
+  const xl = zip.folder('xl')
+  xl?.file('workbook.xml', workbookXml(translateCurrent('xlsx.programmationSheetName')))
+  xl?.folder('_rels')?.file('workbook.xml.rels', workbookRelsXml())
+  xl?.file('styles.xml', stylesXml())
+  xl?.folder('worksheets')?.file('sheet1.xml', programmationWorksheetXml(programmation))
+
+  const blob = await zip.generateAsync({
+    type: 'blob',
+    mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  })
+  downloadBlob(blob, sheetFilename(programmation, 'xlsx'))
 }
 
 function worksheetXml(sheet: PreparationSheet): string {
@@ -132,6 +151,69 @@ function phaseHeight(blocks: PreparationBlock[]): number {
   return Math.min(170, Math.max(64, 38 + Math.ceil(textLength / 115) * 16))
 }
 
+function programmationWorksheetXml(programmation: ProgrammationSheet): string {
+  const rows = programmationToRows(programmation)
+  const sheetRows = rows.map((row, rowIndex) => rowXml(row, rowIndex + 1)).join('')
+
+  return xmlHeader(
+    `<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+      <sheetViews>
+        <sheetView workbookViewId="0">
+          <pane ySplit="4" topLeftCell="A5" activePane="bottomLeft" state="frozen"/>
+        </sheetView>
+      </sheetViews>
+      <cols>
+        <col min="1" max="1" width="18" customWidth="1"/>
+        <col min="2" max="2" width="32" customWidth="1"/>
+        <col min="3" max="3" width="42" customWidth="1"/>
+        <col min="4" max="4" width="42" customWidth="1"/>
+      </cols>
+      <sheetData>${sheetRows}</sheetData>
+      <mergeCells count="3">
+        <mergeCell ref="A1:D1"/>
+        <mergeCell ref="B2:D2"/>
+        <mergeCell ref="B3:D3"/>
+      </mergeCells>
+      <autoFilter ref="A4:D${rows.length}"/>
+    </worksheet>`,
+  )
+}
+
+function programmationToRows(programmation: ProgrammationSheet): StyledCell[][] {
+  const rows: StyledCell[][] = [
+    [{ value: programmation.title, style: styles.title }],
+    [
+      { value: translateCurrent('create.subject'), style: styles.label },
+      { value: programmation.subject, style: styles.wrap },
+    ],
+    [
+      { value: translateCurrent('create.level'), style: styles.label },
+      { value: programmation.level, style: styles.wrap },
+    ],
+    [
+      { value: translateCurrent('programmation.period'), style: styles.header },
+      { value: translateCurrent('programmation.sequence'), style: styles.header },
+      { value: translateCurrent('sheet.skills'), style: styles.header },
+      { value: translateCurrent('programmation.sessions'), style: styles.header },
+    ],
+  ]
+  for (const period of programmation.periods) {
+    const periodLabel = period.theme ? `${period.name}\n${period.theme}` : period.name
+    for (const seq of period.sequences) {
+      rows.push([
+        { value: periodLabel, style: styles.wrap },
+        { value: seq.theme ? `${seq.title}\n${seq.theme}` : seq.title, style: styles.wrap },
+        { value: sheetList(seq.competencies), style: styles.wrap },
+        {
+          value: numberedList(seq.sessions.map((session) => session.name)),
+          style: styles.wrap,
+        },
+      ])
+    }
+  }
+  return rows
+}
+
 function rowXml(row: StyledCell[], rowNumber: number, height?: number): string {
   const heightAttrs = height ? ` ht="${height}" customHeight="1"` : ''
   const cells = row
@@ -179,11 +261,11 @@ function rootRelsXml(): string {
   )
 }
 
-function workbookXml(): string {
+function workbookXml(sheetName: string = translateCurrent('xlsx.sheetName')): string {
   return xmlHeader(
     `<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
       <sheets>
-        <sheet name="${escapeXml(translateCurrent('xlsx.sheetName'))}" sheetId="1" r:id="rId1"/>
+        <sheet name="${escapeXml(sheetName)}" sheetId="1" r:id="rId1"/>
       </sheets>
     </workbook>`,
   )

@@ -29,6 +29,12 @@ const translations = {
     'programmation.title': 'Créer une programmation',
     'programmation.description':
       "Générez une programmation à l'année à partir de vos progressions.",
+    'programmation.copyError': 'Impossible de copier la programmation.',
+    'programmation.copySuccess': 'Programmation copiée dans le presse-papier.',
+    'programmation.exportError': "Impossible d'exporter la programmation.",
+    'programmation.period': 'Période',
+    'programmation.sequence': 'Séquence / Thème',
+    'programmation.sessions': 'Séances (Progression)',
     'home.programmationDescription': "Générer une programmation à l'année.",
     'advanced.aria': 'Activer le raisonnement avancé',
     'advanced.description':
@@ -271,6 +277,7 @@ const translations = {
     'xlsx.supportPrefix': 'Aide : ',
     'xlsx.teacherWords': "Paroles de l'enseignante",
     'xlsx.extensionPrefix': 'Pour aller plus loin : ',
+    'xlsx.programmationSheetName': 'Programmation',
   },
   en: {
     'action.cancel': 'Cancel',
@@ -286,6 +293,12 @@ const translations = {
     'action.preview': 'Preview',
     'programmation.title': 'Create a yearly plan',
     'programmation.description': 'Generate a yearly plan from your progressions.',
+    'programmation.copyError': 'Unable to copy the yearly plan.',
+    'programmation.copySuccess': 'Yearly plan copied to clipboard.',
+    'programmation.exportError': 'Unable to export the yearly plan.',
+    'programmation.period': 'Period',
+    'programmation.sequence': 'Sequence / Theme',
+    'programmation.sessions': 'Sessions (Progression)',
     'home.programmationDescription': 'Generate a yearly plan.',
     'advanced.aria': 'Enable advanced reasoning',
     'advanced.description': 'Uses Gemini 3.6 Flash for better output. Quotas are more limited.',
@@ -519,6 +532,7 @@ const translations = {
     'xlsx.supportPrefix': 'Support: ',
     'xlsx.teacherWords': "Teacher's words",
     'xlsx.extensionPrefix': 'Extension: ',
+    'xlsx.programmationSheetName': 'Yearly plan',
   },
 } as const
 

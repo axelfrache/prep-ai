@@ -1,7 +1,14 @@
-import { Copy, Printer } from 'lucide-react'
-import type { ProgrammationResult } from '@/types/preparation'
+import { ChevronDown, Copy, Download, FileSpreadsheet, FileText, Printer } from 'lucide-react'
+import { toast } from 'sonner'
+import type { ProgrammationResult, ProgrammationSheet } from '@/types/preparation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   Table,
   TableBody,
@@ -11,6 +18,10 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { useI18n } from '@/lib/i18n'
+import { exportProgrammationToDocx } from '@/lib/documentExport'
+import { exportProgrammationToOdt } from '@/lib/odtExport'
+import { exportProgrammationToTxt } from '@/lib/textExport'
+import { exportProgrammationToXlsx } from '@/lib/xlsxExport'
 
 type ProgrammationResultViewProps = {
   result: ProgrammationResult
@@ -20,6 +31,51 @@ export function ProgrammationResultView({ result }: ProgrammationResultViewProps
   const { programmation } = result
   const { t } = useI18n()
 
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(programmationToText(programmation))
+      toast.success(t('programmation.copySuccess'))
+    } catch {
+      toast.error(t('programmation.copyError'))
+    }
+  }
+
+  async function exportDocx() {
+    try {
+      await exportProgrammationToDocx(programmation)
+      toast.success(t('sheet.exportDocumentSuccess'))
+    } catch {
+      toast.error(t('programmation.exportError'))
+    }
+  }
+
+  async function exportOdt() {
+    try {
+      await exportProgrammationToOdt(programmation)
+      toast.success(t('sheet.exportDocumentSuccess'))
+    } catch {
+      toast.error(t('programmation.exportError'))
+    }
+  }
+
+  async function exportXlsx() {
+    try {
+      await exportProgrammationToXlsx(programmation)
+      toast.success(t('sheet.exportSuccess'))
+    } catch {
+      toast.error(t('programmation.exportError'))
+    }
+  }
+
+  function exportTxt() {
+    try {
+      exportProgrammationToTxt(programmation, programmationToText(programmation))
+      toast.success(t('sheet.exportTextSuccess'))
+    } catch {
+      toast.error(t('programmation.exportError'))
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -28,9 +84,36 @@ export function ProgrammationResultView({ result }: ProgrammationResultViewProps
           <h2 className="text-2xl font-semibold tracking-tight">{programmation.title}</h2>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={() => void copyResult(result)}>
+          <Button variant="outline" size="sm" onClick={() => void copy()}>
             <Copy className="mr-2 size-4" /> {t('action.copy')}
           </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Download className="mr-2 size-4" />
+                {t('action.export')}
+                <ChevronDown className="ml-2 size-4 opacity-70" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem onSelect={() => void exportDocx()}>
+                <FileText className="size-4" />
+                {t('action.exportWord')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void exportOdt()}>
+                <FileText className="size-4" />
+                {t('action.exportOdt')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => void exportXlsx()}>
+                <FileSpreadsheet className="size-4" />
+                {t('action.exportExcel')}
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={exportTxt}>
+                <FileText className="size-4" />
+                {t('action.exportTxt')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="mr-2 size-4" /> Imprimer
           </Button>
@@ -102,9 +185,7 @@ export function ProgrammationResultView({ result }: ProgrammationResultViewProps
   )
 }
 
-async function copyResult(result: ProgrammationResult): Promise<void> {
-  const { programmation } = result
-
+export function programmationToText(programmation: ProgrammationSheet): string {
   let text = `${programmation.title}\n${programmation.subject} - ${programmation.level}\n\n`
 
   for (const period of programmation.periods) {
@@ -124,5 +205,5 @@ async function copyResult(result: ProgrammationResult): Promise<void> {
     }
   }
 
-  await navigator.clipboard.writeText(text)
+  return text
 }
