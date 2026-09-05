@@ -252,7 +252,9 @@ function guidanceCell(exchanges: GuidanceExchange[], anticipations: string, widt
   const exchangeGroups = exchanges
     .map((exchange) => [exchange.speech, exchange.answer].filter((text) => text.length > 0))
     .filter((lines) => lines.length > 0)
-    .map((lines) => lines.map((line) => paragraph(line, { fontSize: 20, spacingAfter: 0 })).join(''))
+    .map((lines) =>
+      lines.map((line) => paragraph(line, { fontSize: 20, spacingAfter: 0 })).join(''),
+    )
 
   const anticipationGroup =
     anticipations.trim().length > 0
@@ -270,7 +272,10 @@ function guidanceCell(exchanges: GuidanceExchange[], anticipations: string, widt
 
   const allGroups = [...exchangeGroups, anticipationGroup].filter((group) => group.length > 0)
   const spacer = paragraph(' ', { fontSize: 20, spacingAfter: 0 })
-  const body = allGroups.length > 0 ? allGroups.join(spacer) : paragraph(' ', { fontSize: 20, spacingAfter: 0 })
+  const body =
+    allGroups.length > 0
+      ? allGroups.join(spacer)
+      : paragraph(' ', { fontSize: 20, spacingAfter: 0 })
 
   return `<w:tc>
     <w:tcPr>
