@@ -154,8 +154,18 @@ export type ProgrammationSheet = {
   periods: ProgrammationPeriod[]
 }
 
-export type ProgrammationResult = {
+export type SavedProgrammation = {
+  id: string
+  createdAt: string
   programmation: ProgrammationSheet
+}
+
+export type ProgrammationSummary = {
+  id: string
+  title: string
+  subject: string
+  level: string
+  createdAt: string
 }
 
 export type CreateProgrammationPayload = {

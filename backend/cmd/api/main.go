@@ -38,6 +38,7 @@ func main() {
 
 	users := postgres.NewUserRepository(pool)
 	sheets := postgres.NewSheetRepository(pool)
+	programmations := postgres.NewProgrammationRepository(pool)
 	classProfiles := postgres.NewClassProfileRepository(pool)
 	generator := aigateway.New(
 		cfg.AIGatewayURL,
@@ -49,7 +50,7 @@ func main() {
 	hasher := security.NewBcryptHasher()
 	tokens := security.NewJWTService(cfg.JWTSecret, cfg.JWTTTL)
 
-	preparation := service.New(generator, sheets, classProfiles)
+	preparation := service.New(generator, sheets, programmations, classProfiles)
 	auth := service.NewAuth(users, hasher, tokens)
 	classProfile := service.NewClassProfile(classProfiles)
 

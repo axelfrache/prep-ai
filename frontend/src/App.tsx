@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { ClassProfilePage } from '@/pages/ClassProfilePage'
 import { CreatePage } from '@/pages/CreatePage'
 import { ProgrammationPage } from '@/pages/ProgrammationPage'
+import { ProgrammationsPage } from '@/pages/ProgrammationsPage'
 import { EditSheetPage } from '@/pages/EditSheetPage'
 import { HomePage } from '@/pages/HomePage'
 import { ImprovePage } from '@/pages/ImprovePage'
@@ -41,6 +42,7 @@ function App() {
         <Route index element={<HomePage />} />
         <Route path="create" element={<CreatePage />} />
         <Route path="programmation" element={<ProgrammationPage />} />
+        <Route path="programmations" element={<ProgrammationsPage />} />
         <Route path="improve" element={<ImprovePage />} />
         <Route path="improve/:sheetId" element={<ImprovePage />} />
         <Route path="sheets/:sheetId/edit" element={<EditSheetPage />} />

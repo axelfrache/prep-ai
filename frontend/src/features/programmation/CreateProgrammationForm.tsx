@@ -14,12 +14,12 @@ import {
 import { createProgrammation } from '@/lib/api'
 import { DocumentExtractionError, extractDocuments } from '@/lib/documentExtractors'
 import { translateCurrent, useI18n } from '@/lib/i18n'
-import type { ProgrammationResult } from '@/types/preparation'
+import type { SavedProgrammation } from '@/types/preparation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageError } from '@/components/PageError'
 
 type CreateProgrammationFormProps = {
-  onSuccess: (result: ProgrammationResult) => void
+  onSuccess: (result: SavedProgrammation) => void
 }
 
 const levelOptions = ['CE2']

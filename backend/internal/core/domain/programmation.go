@@ -1,5 +1,7 @@
 package domain
 
+import "strings"
+
 type ProgrammationSession struct {
 	Name string
 }
@@ -54,4 +56,21 @@ type CreateProgrammationRequest struct {
 	Level     string
 	Resources []Document
 	Notes     string
+}
+
+func (r CreateProgrammationRequest) Validate() (CreateProgrammationRequest, error) {
+	subject := strings.TrimSpace(r.Subject)
+	level := strings.TrimSpace(r.Level)
+	if subject == "" {
+		return CreateProgrammationRequest{}, invalid("Subject is required.")
+	}
+	if level == "" {
+		return CreateProgrammationRequest{}, invalid("Level is required.")
+	}
+	return CreateProgrammationRequest{
+		Subject:   subject,
+		Level:     level,
+		Resources: r.Resources,
+		Notes:     strings.TrimSpace(r.Notes),
+	}, nil
 }

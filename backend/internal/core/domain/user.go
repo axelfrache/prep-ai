@@ -73,3 +73,7 @@ func ErrUnauthenticated() error {
 func ErrSheetNotFound() error {
 	return notFound("Sheet not found.")
 }
+
+func ErrProgrammationNotFound() error {
+	return notFound("Programmation not found.")
+}

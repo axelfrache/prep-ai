@@ -14,7 +14,10 @@ type PreparationService interface {
 	GetSheet(ctx context.Context, userID, sheetID string) (domain.SavedSheet, error)
 	UpdateSheet(ctx context.Context, userID, sheetID string, sheet domain.Sheet) (domain.SavedSheet, error)
 	DeleteSheet(ctx context.Context, userID, sheetID string) error
-	CreateProgrammation(ctx context.Context, req domain.CreateProgrammationRequest) (domain.ProgrammationSheet, error)
+	CreateProgrammation(ctx context.Context, userID string, req domain.CreateProgrammationRequest) (domain.SavedProgrammation, error)
+	ListProgrammations(ctx context.Context, userID string) ([]domain.SavedProgrammation, error)
+	GetProgrammation(ctx context.Context, userID, programmationID string) (domain.SavedProgrammation, error)
+	DeleteProgrammation(ctx context.Context, userID, programmationID string) error
 }
 
 type ClassProfileService interface {
@@ -48,6 +51,13 @@ type SheetRepository interface {
 	ListByUser(ctx context.Context, userID string) ([]domain.SavedSheet, error)
 	GetByID(ctx context.Context, userID, sheetID string) (domain.SavedSheet, error)
 	Delete(ctx context.Context, userID, sheetID string) error
+}
+
+type ProgrammationRepository interface {
+	Save(ctx context.Context, userID string, programmation domain.ProgrammationSheet) (domain.SavedProgrammation, error)
+	ListByUser(ctx context.Context, userID string) ([]domain.SavedProgrammation, error)
+	GetByID(ctx context.Context, userID, programmationID string) (domain.SavedProgrammation, error)
+	Delete(ctx context.Context, userID, programmationID string) error
 }
 
 type ClassProfileRepository interface {

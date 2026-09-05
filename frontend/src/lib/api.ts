@@ -1,9 +1,12 @@
 import type {
   AuthResponse,
   ClassProfile,
+  CreateProgrammationPayload,
   CreateSheetPayload,
   ImproveSavedSheetPayload,
   ImproveSheetPayload,
+  ProgrammationSummary,
+  SavedProgrammation,
   SavedSheet,
   SheetSummary,
   UpdateSheetPayload,
@@ -156,7 +159,19 @@ async function readBackendError(response: Response): Promise<string> {
 }
 
 export function createProgrammation(
-  payload: import('@/types/preparation').CreateProgrammationPayload,
-): Promise<import('@/types/preparation').ProgrammationResult> {
+  payload: CreateProgrammationPayload,
+): Promise<SavedProgrammation> {
   return request('/api/create-programmation', { method: 'POST', body: JSON.stringify(payload) })
+}
+
+export function listProgrammations(): Promise<ProgrammationSummary[]> {
+  return request('/api/programmations')
+}
+
+export function getProgrammation(id: string): Promise<SavedProgrammation> {
+  return request(`/api/programmations/${id}`)
+}
+
+export function deleteProgrammation(id: string): Promise<void> {
+  return request(`/api/programmations/${id}`, { method: 'DELETE' })
 }

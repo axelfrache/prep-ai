@@ -9,25 +9,52 @@ import (
 )
 
 type Preparation struct {
-	generator     port.SheetGenerator
-	sheets        port.SheetRepository
-	classProfiles port.ClassProfileRepository
+	generator      port.SheetGenerator
+	sheets         port.SheetRepository
+	programmations port.ProgrammationRepository
+	classProfiles  port.ClassProfileRepository
 }
 
-func New(generator port.SheetGenerator, sheets port.SheetRepository, classProfiles port.ClassProfileRepository) *Preparation {
-	return &Preparation{generator: generator, sheets: sheets, classProfiles: classProfiles}
+func New(generator port.SheetGenerator, sheets port.SheetRepository, programmations port.ProgrammationRepository, classProfiles port.ClassProfileRepository) *Preparation {
+	return &Preparation{generator: generator, sheets: sheets, programmations: programmations, classProfiles: classProfiles}
 }
 
-func (p *Preparation) CreateProgrammation(ctx context.Context, req domain.CreateProgrammationRequest) (domain.ProgrammationSheet, error) {
-	if req.Subject == "" || req.Level == "" {
-		return domain.ProgrammationSheet{}, errors.New("invalid request")
+func (p *Preparation) CreateProgrammation(ctx context.Context, userID string, req domain.CreateProgrammationRequest) (domain.SavedProgrammation, error) {
+	clean, err := req.Validate()
+	if err != nil {
+		return domain.SavedProgrammation{}, err
 	}
-	prompt := buildCreateProgrammationPrompt(req)
+	prompt := buildCreateProgrammationPrompt(clean)
 	sheet, err := p.generator.GenerateProgrammation(ctx, prompt)
 	if err != nil {
-		return domain.ProgrammationSheet{}, err
+		return domain.SavedProgrammation{}, err
 	}
-	return sheet, nil
+	return p.programmations.Save(ctx, userID, sheet)
+}
+
+func (p *Preparation) ListProgrammations(ctx context.Context, userID string) ([]domain.SavedProgrammation, error) {
+	return p.programmations.ListByUser(ctx, userID)
+}
+
+func (p *Preparation) GetProgrammation(ctx context.Context, userID, programmationID string) (domain.SavedProgrammation, error) {
+	saved, err := p.programmations.GetByID(ctx, userID, programmationID)
+	if err != nil {
+		if errors.Is(err, port.ErrNotFound) {
+			return domain.SavedProgrammation{}, domain.ErrProgrammationNotFound()
+		}
+		return domain.SavedProgrammation{}, err
+	}
+	return saved, nil
+}
+
+func (p *Preparation) DeleteProgrammation(ctx context.Context, userID, programmationID string) error {
+	if err := p.programmations.Delete(ctx, userID, programmationID); err != nil {
+		if errors.Is(err, port.ErrNotFound) {
+			return domain.ErrProgrammationNotFound()
+		}
+		return err
+	}
+	return nil
 }
 
 func (p *Preparation) CreateSheet(ctx context.Context, userID string, req domain.CreateRequest) (domain.SavedSheet, error) {

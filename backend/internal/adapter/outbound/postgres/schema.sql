@@ -15,6 +15,16 @@ CREATE TABLE IF NOT EXISTS sheets (
 
 CREATE INDEX IF NOT EXISTS sheets_user_created_idx ON sheets (user_id, created_at DESC);
 
+CREATE TABLE IF NOT EXISTS programmations (
+    id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id    UUID NOT NULL REFERENCES users (id) ON DELETE CASCADE,
+    title      TEXT NOT NULL,
+    data       JSONB NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS programmations_user_created_idx ON programmations (user_id, created_at DESC);
+
 CREATE TABLE IF NOT EXISTS class_profiles (
     user_id    UUID PRIMARY KEY REFERENCES users (id) ON DELETE CASCADE,
     data       JSONB NOT NULL DEFAULT '{}'::jsonb,

@@ -12,7 +12,7 @@ import (
 
 func TestUpdateSheetPersistsExistingSheet(t *testing.T) {
 	repo := &fakeSheetRepository{}
-	prep := New(nil, repo, nil)
+	prep := New(nil, repo, nil, nil)
 	sheet := validUpdateSheet()
 
 	saved, err := prep.UpdateSheet(context.Background(), "user-1", "sheet-1", sheet)
@@ -29,7 +29,7 @@ func TestUpdateSheetPersistsExistingSheet(t *testing.T) {
 
 func TestUpdateSheetRejectsInvalidSheet(t *testing.T) {
 	repo := &fakeSheetRepository{}
-	prep := New(nil, repo, nil)
+	prep := New(nil, repo, nil, nil)
 
 	_, err := prep.UpdateSheet(context.Background(), "user-1", "sheet-1", domain.Sheet{})
 	if err == nil {

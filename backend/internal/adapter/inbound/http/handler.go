@@ -42,12 +42,38 @@ func (h *Handler) CreateProgrammation(w stdhttp.ResponseWriter, r *stdhttp.Reque
 		return
 	}
 
-	sheet, err := h.service.CreateProgrammation(r.Context(), dto.toDomain())
+	saved, err := h.service.CreateProgrammation(r.Context(), userIDFromContext(r.Context()), dto.toDomain())
 	if err != nil {
 		writeError(w, err)
 		return
 	}
-	writeJSON(w, stdhttp.StatusOK, newProgrammationResultDTO(sheet))
+	writeJSON(w, stdhttp.StatusOK, newSavedProgrammationDTO(saved))
+}
+
+func (h *Handler) ListProgrammations(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	saved, err := h.service.ListProgrammations(r.Context(), userIDFromContext(r.Context()))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, stdhttp.StatusOK, newProgrammationSummaryList(saved))
+}
+
+func (h *Handler) GetProgrammation(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	saved, err := h.service.GetProgrammation(r.Context(), userIDFromContext(r.Context()), r.PathValue("id"))
+	if err != nil {
+		writeError(w, err)
+		return
+	}
+	writeJSON(w, stdhttp.StatusOK, newSavedProgrammationDTO(saved))
+}
+
+func (h *Handler) DeleteProgrammation(w stdhttp.ResponseWriter, r *stdhttp.Request) {
+	if err := h.service.DeleteProgrammation(r.Context(), userIDFromContext(r.Context()), r.PathValue("id")); err != nil {
+		writeError(w, err)
+		return
+	}
+	w.WriteHeader(stdhttp.StatusNoContent)
 }
 
 func (h *Handler) Improve(w stdhttp.ResponseWriter, r *stdhttp.Request) {

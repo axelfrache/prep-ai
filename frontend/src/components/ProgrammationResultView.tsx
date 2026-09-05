@@ -1,6 +1,6 @@
 import { ChevronDown, Copy, Download, FileSpreadsheet, FileText, Printer } from 'lucide-react'
 import { toast } from 'sonner'
-import type { ProgrammationResult, ProgrammationSheet } from '@/types/preparation'
+import type { ProgrammationSheet, SavedProgrammation } from '@/types/preparation'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -24,7 +24,7 @@ import { exportProgrammationToTxt } from '@/lib/textExport'
 import { exportProgrammationToXlsx } from '@/lib/xlsxExport'
 
 type ProgrammationResultViewProps = {
-  result: ProgrammationResult
+  result: SavedProgrammation
 }
 
 export function ProgrammationResultView({ result }: ProgrammationResultViewProps) {

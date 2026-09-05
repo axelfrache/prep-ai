@@ -371,10 +371,6 @@ func (r createProgrammationRequestDTO) toDomain() domain.CreateProgrammationRequ
 	}
 }
 
-type programmationResultDTO struct {
-	Programmation programmationSheetDTO `json:"programmation"`
-}
-
 type programmationSheetDTO struct {
 	Title   string                `json:"title"`
 	Subject string                `json:"subject"`
@@ -399,7 +395,7 @@ type programmationSession struct {
 	Name string `json:"name"`
 }
 
-func newProgrammationResultDTO(sheet domain.ProgrammationSheet) programmationResultDTO {
+func newProgrammationSheetDTO(sheet domain.ProgrammationSheet) programmationSheetDTO {
 	periods := make([]programmationPeriod, len(sheet.Periods))
 	for i, p := range sheet.Periods {
 		sequences := make([]programmationSequence, len(p.Sequences))
@@ -421,12 +417,46 @@ func newProgrammationResultDTO(sheet domain.ProgrammationSheet) programmationRes
 			Sequences: sequences,
 		}
 	}
-	return programmationResultDTO{
-		Programmation: programmationSheetDTO{
-			Title:   sheet.Title,
-			Subject: sheet.Subject,
-			Level:   sheet.Level,
-			Periods: periods,
-		},
+	return programmationSheetDTO{
+		Title:   sheet.Title,
+		Subject: sheet.Subject,
+		Level:   sheet.Level,
+		Periods: periods,
 	}
+}
+
+type savedProgrammationDTO struct {
+	ID            string                `json:"id"`
+	CreatedAt     time.Time             `json:"createdAt"`
+	Programmation programmationSheetDTO `json:"programmation"`
+}
+
+func newSavedProgrammationDTO(saved domain.SavedProgrammation) savedProgrammationDTO {
+	return savedProgrammationDTO{
+		ID:            saved.ID,
+		CreatedAt:     saved.CreatedAt,
+		Programmation: newProgrammationSheetDTO(saved.Programmation),
+	}
+}
+
+type programmationSummaryDTO struct {
+	ID        string    `json:"id"`
+	Title     string    `json:"title"`
+	Subject   string    `json:"subject"`
+	Level     string    `json:"level"`
+	CreatedAt time.Time `json:"createdAt"`
+}
+
+func newProgrammationSummaryList(saved []domain.SavedProgrammation) []programmationSummaryDTO {
+	out := make([]programmationSummaryDTO, len(saved))
+	for i, s := range saved {
+		out[i] = programmationSummaryDTO{
+			ID:        s.ID,
+			Title:     s.Programmation.Title,
+			Subject:   s.Programmation.Subject,
+			Level:     s.Programmation.Level,
+			CreatedAt: s.CreatedAt,
+		}
+	}
+	return out
 }
