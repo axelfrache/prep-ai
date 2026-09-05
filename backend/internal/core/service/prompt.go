@@ -56,7 +56,8 @@ Do not generate HTML, Markdown, HTML tables, colors, or visual styling.
 Do not transliterate French. Keep accents in every generated French value: write "élève", "être", "séance", "matériel", "différenciation", "à", "où", "ça"; never write "eleve", "etre", "seance", "materiel", "a", "ou", "ca" when the accented form is required.
 If available materials are provided, use them as a strong constraint: prioritize that material in the "materials" field and in the lesson flow, and avoid suggesting unavailable material unless it is truly necessary.
 If class profile context is provided, adapt the lesson to it without mentioning private student details unnecessarily. Local dynamic inputs, notes, resources, and available materials for the current request override global class preferences.
-Use teacher_speech and teacher_relaunch for what the teacher can say directly.`
+Use teacher_speech and teacher_relaunch for what the teacher can say directly.
+Create one "instruction" block per distinct activity, question, or example. If a phase covers several examples or exchanges, split them into separate instruction blocks (one per example) instead of grouping them under a single instruction — each instruction should be immediately followed by the teacher_speech/expected_answer blocks that belong to it, so a reader can tell which answer goes with which question.`
 
 func buildCreatePrompt(req domain.CreateRequest) string {
 	var b strings.Builder

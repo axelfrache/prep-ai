@@ -4,12 +4,12 @@ import {
   downloadBlob,
   escapeXml,
   groupPhaseBlocks,
-  guidanceSections,
+  guidanceExchanges,
   sheetFilename,
   sheetList,
   xmlHeader,
 } from '@/lib/exportUtils'
-import type { GuidanceSection } from '@/lib/exportUtils'
+import type { GuidanceExchange } from '@/lib/exportUtils'
 import type { PreparationSheet } from '@/types/preparation'
 
 type CellOptions = {
@@ -101,7 +101,7 @@ function phaseTable(sheet: PreparationSheet): string {
       tableCell(`${phase.name}\n${phase.durationMinutes} min`, { width: phaseColumnWidths[0] }),
       tableCell(phase.organization, { width: phaseColumnWidths[1] }),
       tableCell(blocks.instructions, { width: phaseColumnWidths[2] }),
-      guidanceCell(guidanceSections(blocks), phaseColumnWidths[3]),
+      guidanceCell(guidanceExchanges(phase.blocks), blocks.anticipations, phaseColumnWidths[3]),
     ])
   })
   return table([header, ...rows], phaseColumnWidths)
@@ -158,20 +158,29 @@ function tableCell(value: string, options: CellOptions = {}): string {
   </w:tc>`
 }
 
-function guidanceCell(sections: GuidanceSection[], width: number): string {
-  const sectionParagraphs = (section: GuidanceSection) =>
-    [
-      paragraph(section.label, { bold: true, fontSize: 20, spacingAfter: 0 }),
-      ...splitLines(section.content).map((line) =>
-        paragraph(line || ' ', { fontSize: 20, spacingAfter: 0 }),
-      ),
-    ].join('')
+function guidanceCell(exchanges: GuidanceExchange[], anticipations: string, width: number): string {
+  const exchangeGroups = exchanges
+    .map((exchange) => [exchange.speech, exchange.answer].filter((text) => text.length > 0))
+    .filter((lines) => lines.length > 0)
+    .map((lines) => lines.map((line) => paragraph(line, { fontSize: 20, spacingAfter: 0 })).join(''))
 
+  const anticipationGroup =
+    anticipations.trim().length > 0
+      ? [
+          paragraph(translateCurrent('sheet.anticipations'), {
+            bold: true,
+            fontSize: 20,
+            spacingAfter: 0,
+          }),
+          ...splitLines(anticipations).map((line) =>
+            paragraph(line || ' ', { fontSize: 20, spacingAfter: 0 }),
+          ),
+        ].join('')
+      : ''
+
+  const allGroups = [...exchangeGroups, anticipationGroup].filter((group) => group.length > 0)
   const spacer = paragraph(' ', { fontSize: 20, spacingAfter: 0 })
-  const body =
-    sections.length > 0
-      ? sections.map(sectionParagraphs).join(spacer)
-      : paragraph(' ', { fontSize: 20, spacingAfter: 0 })
+  const body = allGroups.length > 0 ? allGroups.join(spacer) : paragraph(' ', { fontSize: 20, spacingAfter: 0 })
 
   return `<w:tc>
     <w:tcPr>

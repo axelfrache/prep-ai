@@ -8,9 +8,9 @@ export type BlockGroup = {
   anticipations: string
 }
 
-export type GuidanceSection = {
-  label: string
-  content: string
+export type GuidanceExchange = {
+  speech: string
+  answer: string
 }
 
 export function sheetFilename(sheet: PreparationSheet, extension: string): string {
@@ -32,12 +32,23 @@ export function groupPhaseBlocks(blocks: PreparationBlock[]): BlockGroup {
   }
 }
 
-export function guidanceSections(blocks: BlockGroup): GuidanceSection[] {
-  return [
-    { label: translateCurrent('xlsx.teacherWords'), content: blocks.teacherWords },
-    { label: translateCurrent('xlsx.expectedAnswers'), content: blocks.expectedAnswers },
-    { label: translateCurrent('sheet.anticipations'), content: blocks.anticipations },
-  ].filter((section) => section.content.trim().length > 0)
+export function guidanceExchanges(blocks: PreparationBlock[]): GuidanceExchange[] {
+  const exchanges: GuidanceExchange[] = []
+  for (const block of blocks) {
+    if (block.type === 'teacher_speech' || block.type === 'teacher_relaunch') {
+      exchanges.push({ speech: `${blockPrefix(block)}« ${block.text} »`, answer: '' })
+      continue
+    }
+    if (block.type === 'expected_answer') {
+      const last = exchanges.at(-1)
+      if (last && !last.answer) {
+        last.answer = block.text
+      } else {
+        exchanges.push({ speech: '', answer: block.text })
+      }
+    }
+  }
+  return exchanges
 }
 
 export function numberedBlocks(

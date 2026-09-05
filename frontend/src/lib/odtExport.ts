@@ -4,11 +4,11 @@ import {
   downloadBlob,
   escapeXml,
   groupPhaseBlocks,
-  guidanceSections,
+  guidanceExchanges,
   sheetFilename,
   sheetList,
 } from '@/lib/exportUtils'
-import type { GuidanceSection } from '@/lib/exportUtils'
+import type { GuidanceExchange } from '@/lib/exportUtils'
 import type { PreparationSheet } from '@/types/preparation'
 
 export async function exportSheetToOdt(sheet: PreparationSheet): Promise<void> {
@@ -80,7 +80,7 @@ function phaseTable(sheet: PreparationSheet): string {
       cell(`${phase.name}\n${phase.durationMinutes} min`),
       cell(phase.organization),
       cell(blocks.instructions),
-      guidanceCell(guidanceSections(blocks)),
+      guidanceCell(guidanceExchanges(phase.blocks), blocks.anticipations),
     ])
   })
   return table([header, ...rows])
@@ -101,15 +101,26 @@ function cell(value: string, header = false): string {
   return `<table:table-cell table:style-name="${header ? 'HeaderCell' : 'BodyCell'}" office:value-type="string">${paragraphs.join('')}</table:table-cell>`
 }
 
-function guidanceCell(sections: GuidanceSection[]): string {
-  if (sections.length === 0) {
+function guidanceCell(exchanges: GuidanceExchange[], anticipations: string): string {
+  const exchangeGroups = exchanges
+    .map((exchange) => [exchange.speech, exchange.answer].filter((text) => text.length > 0))
+    .filter((lines) => lines.length > 0)
+    .map((lines) => lines.map((line) => `<text:p>${escapeXml(line)}</text:p>`).join(''))
+
+  const anticipationGroup =
+    anticipations.trim().length > 0
+      ? [
+          `<text:p><text:span text:style-name="Bold">${escapeXml(translateCurrent('sheet.anticipations'))}</text:span></text:p>`,
+          ...anticipations.split(/\r?\n/).map((line) => `<text:p>${escapeXml(line)}</text:p>`),
+        ].join('')
+      : ''
+
+  const groups = [...exchangeGroups, anticipationGroup].filter((group) => group.length > 0)
+  if (groups.length === 0) {
     return cell('')
   }
-  const paragraphs = sections.flatMap((section) => [
-    `<text:p><text:span text:style-name="Bold">${escapeXml(section.label)}</text:span></text:p>`,
-    ...section.content.split(/\r?\n/).map((line) => `<text:p>${escapeXml(line)}</text:p>`),
-  ])
-  return `<table:table-cell table:style-name="BodyCell" office:value-type="string">${paragraphs.join('')}</table:table-cell>`
+  const spacer = '<text:p> </text:p>'
+  return `<table:table-cell table:style-name="BodyCell" office:value-type="string">${groups.join(spacer)}</table:table-cell>`
 }
 
 function stylesXml(): string {
