@@ -33,7 +33,7 @@ type ParagraphOptions = {
 
 const contentWidth = 15400
 const metaColumnWidths = [2500, contentWidth - 2500]
-const phaseColumnWidths = [2600, 1900, 5200, 5700]
+const phaseColumnWidths = [4500, 5200, 5700]
 const programmationColumnWidths = [4200, 5200, 6000]
 
 export async function exportSheetToDocx(sheet: PreparationSheet): Promise<void> {
@@ -112,20 +112,20 @@ function phaseTable(sheet: PreparationSheet): string {
       header: true,
       width: phaseColumnWidths[0],
     }),
-    tableCell(translateCurrent('xlsx.organization'), { header: true, width: phaseColumnWidths[1] }),
-    tableCell(translateCurrent('sheet.steps'), { header: true, width: phaseColumnWidths[2] }),
+    tableCell(translateCurrent('sheet.steps'), { header: true, width: phaseColumnWidths[1] }),
     tableCell(translateCurrent('docx.guidance'), {
       header: true,
-      width: phaseColumnWidths[3],
+      width: phaseColumnWidths[2],
     }),
   ])
   const rows = sheet.phases.map((phase) => {
     const blocks = groupPhaseBlocks(phase.blocks)
     return tableRow([
-      tableCell(`${phase.name}\n${phase.durationMinutes} min`, { width: phaseColumnWidths[0] }),
-      tableCell(phase.organization, { width: phaseColumnWidths[1] }),
-      tableCell(blocks.instructions, { width: phaseColumnWidths[2] }),
-      guidanceCell(guidanceExchanges(phase.blocks), blocks.anticipations, phaseColumnWidths[3]),
+      tableCell(`${phase.name}\n${phase.durationMinutes} min\n${phase.organization}`, {
+        width: phaseColumnWidths[0],
+      }),
+      tableCell(blocks.instructions, { width: phaseColumnWidths[1] }),
+      guidanceCell(guidanceExchanges(phase.blocks), blocks.anticipations, phaseColumnWidths[2]),
     ])
   })
   return table([header, ...rows], phaseColumnWidths)

@@ -47,7 +47,16 @@ export async function exportProgrammationToOdt(programmation: ProgrammationSheet
   downloadBlob(blob, sheetFilename(programmation, 'odt'))
 }
 
+const columnWidthsCm = [3.5, 5, 6, 13.5]
+
 function automaticStylesXml(): string {
+  const columnStyles = columnWidthsCm
+    .map(
+      (width) => `<style:style style:name="${columnStyleName(width)}" style:family="table-column">
+        <style:table-column-properties style:column-width="${width}cm"/>
+      </style:style>`,
+    )
+    .join('')
   return `<office:automatic-styles>
       <style:style style:name="HeaderCell" style:family="table-cell">
         <style:table-cell-properties style:background-color="#eaf2ff" fo:padding="0.08in" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"/>
@@ -58,7 +67,12 @@ function automaticStylesXml(): string {
       <style:style style:name="Bold" style:family="text">
         <style:text-properties fo:font-weight="bold" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0"/>
       </style:style>
+      ${columnStyles}
     </office:automatic-styles>`
+}
+
+function columnStyleName(widthCm: number): string {
+  return `ColW${String(widthCm).replace('.', '_')}`
 }
 
 function contentXml(sheet: PreparationSheet): string {
@@ -105,7 +119,10 @@ function programmationMetaTable(programmation: ProgrammationSheet): string {
     [translateCurrent('create.subject'), programmation.subject],
     [translateCurrent('create.level'), programmation.level],
   ]
-  return table(rows.map(([label, value]) => row([cell(label, true), cell(value)])))
+  return table(
+    rows.map(([label, value]) => row([cell(label, true), cell(value)])),
+    [3.5, 13.5],
+  )
 }
 
 function periodSection(period: ProgrammationPeriod): string {
@@ -126,7 +143,7 @@ function sequenceTable(sequences: ProgrammationSequence[]): string {
       cell(numberedList(seq.sessions.map((session) => session.name))),
     ]),
   )
-  return table([header, ...rows])
+  return table([header, ...rows], [5, 6, 6])
 }
 
 function metaTable(sheet: PreparationSheet): string {
@@ -137,30 +154,34 @@ function metaTable(sheet: PreparationSheet): string {
     [translateCurrent('sheet.skills'), sheetList(sheet.competencies)],
     [translateCurrent('sheet.materials'), sheetList(sheet.materials)],
   ]
-  return table(rows.map(([label, value]) => row([cell(label, true), cell(value)])))
+  return table(
+    rows.map(([label, value]) => row([cell(label, true), cell(value)])),
+    [3.5, 13.5],
+  )
 }
 
 function phaseTable(sheet: PreparationSheet): string {
   const header = row([
     cell(translateCurrent('sheet.phaseDuration'), true),
-    cell(translateCurrent('xlsx.organization'), true),
     cell(translateCurrent('sheet.steps'), true),
     cell(translateCurrent('docx.guidance'), true),
   ])
   const rows = sheet.phases.map((phase) => {
     const blocks = groupPhaseBlocks(phase.blocks)
     return row([
-      cell(`${phase.name}\n${phase.durationMinutes} min`),
-      cell(phase.organization),
+      cell(`${phase.name}\n${phase.durationMinutes} min\n${phase.organization}`),
       cell(blocks.instructions),
       guidanceCell(guidanceExchanges(phase.blocks), blocks.anticipations),
     ])
   })
-  return table([header, ...rows])
+  return table([header, ...rows], [5, 6, 6])
 }
 
-function table(rows: string[]): string {
-  return `<table:table>${rows.join('')}</table:table>`
+function table(rows: string[], columnWidths: number[]): string {
+  const columns = columnWidths
+    .map((width) => `<table:table-column table:style-name="${columnStyleName(width)}"/>`)
+    .join('')
+  return `<table:table>${columns}${rows.join('')}</table:table>`
 }
 
 function row(cells: string[]): string {
